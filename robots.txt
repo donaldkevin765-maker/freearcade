@@ -1,0 +1,33 @@
+# robots.txt — Allow all AI crawlers and search engines.
+# This helps Google, ChatGPT, Claude, Perplexity and others index the site.
+
+User-agent: *
+Allow: /
+
+# Also explicitly allowed for major AI crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+# Sitemap
+Sitemap: https://donaldkevin765-maker.github.io/sistema-bot/sitemap.xml

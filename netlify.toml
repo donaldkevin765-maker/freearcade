@@ -1,0 +1,4 @@
+# Netlify config for the Chromatic Hub web build (static, pre-built).
+# Drag-drop this folder on app.netlify.com/drop, OR run `netlify deploy --prod --dir .`
+[build]
+  publish = "."

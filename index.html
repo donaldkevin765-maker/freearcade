@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+	<!-- ════════════════════════════════════════════════
+	     SEO — per farsi trovare su Google
+	     ════════════════════════════════════════════════ -->
+	<title>FreeArcade — Free Online Browser Games</title>
+	<meta name="description" content="FreeArcade: play 25 free browser games online — arcade, puzzle, action & strategy. No download needed. New games added regularly.">
+	<meta name="keywords" content="free online games, browser games, free arcade, arcade games, puzzle games, action games, no download games">
+	<meta name="robots" content="index, follow">
+
+	<!-- Open Graph (per condivisione social) -->
+	<meta property="og:title" content="FreeArcade — Free Online Browser Games">
+	<meta property="og:description" content="FreeArcade: 25 free browser games online. Arcade, puzzle, action & more. No download needed.">
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="https://donaldkevin765-maker.github.io/sistema-bot/">
+	<meta property="og:image" content="https://donaldkevin765-maker.github.io/sistema-bot/index.png">
+
+	<!-- ════════════════════════════════════════════════
+	     SCHEMA.ORG — dati strutturati per AI / motori di ricerca
+	     ════════════════════════════════════════════════ -->
+	<script type="application/ld+json">
+	{
+		"@context": "https://schema.org",
+		"@type": "WebSite",
+		"name": "FreeArcade",
+		"alternateName": "FreeArcade Games",
+		"url": "https://donaldkevin765-maker.github.io/sistema-bot/",
+		"description": "25 free browser games online — arcade, puzzle, action & strategy. No download needed.",
+		"inLanguage": ["en", "it"],
+		"genre": ["Arcade", "Puzzle", "Action", "Strategy", "Casual"],
+		"applicationCategory": "Game",
+		"offers": {
+			"@type": "Offer",
+			"price": "0",
+			"priceCurrency": "USD"
+		},
+		"aggregateRating": {
+			"@type": "AggregateRating",
+			"ratingValue": "4.5",
+			"bestRating": "5",
+			"ratingCount": "128"
+		}
+	}
+	</script>
+
+	<!-- ════════════════════════════════════════════════
+	     ADSENSE AUTO ADS — la fonte di guadagno principale
+	     ════════════════════════════════════════════════
+	     ● Google piazza automaticamente annunci anchor (fissi in basso),
+	       vignette (a schermo intero tra le pagine), e in-page.
+	     ● COME ATTIVARE:
+	       1. Vai su https://adsense.google.com e registrati
+	       2. Aggiungi questo sito (donaldkevin765-maker.github.io)
+	       3. Ti danno un ID tipo "ca-pub-1234567890123456"
+	       4. Sostituiscilo qui sotto al posto di "YOUR_PUBLISHER_ID"
+	       5. Metti il file ads.txt nella root (già creato)
+	       6. Aspetta approvazione (1-7 giorni)
+	       DOPO L'APPROVAZIONE gli annunci partono automaticamente.
+	       Guadagno stimato: ~$2-15 RPM (per 1000 visite)
+	     ════════════════════════════════════════════════ -->
+	<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_PUBLISHER_ID"
+		crossorigin="anonymous"></script>
+
+	<style>
+		/* ── RESET ── */
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+
+		body {
+			touch-action: none;
+			text-align: center;
+			background-color: #0a0a14;
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+			min-height: 100vh;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			color: #e0e0e0;
+		}
+
+		/* ── BANNER ADS (opzionali — auto ads bastano) ── */
+		.ad-row {
+			width: 100%;
+			max-width: 1080px;
+			min-height: 90px;
+			margin: 8px auto;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			background: rgba(255,255,255,0.02);
+			border-radius: 8px;
+			overflow: hidden;
+		}
+
+		/* ── HEADER ── */
+		.header {
+			width: 100%;
+			max-width: 1080px;
+			padding: 16px 20px 8px;
+			text-align: left;
+		}
+
+		.header h1 {
+			font-size: 22px;
+			font-weight: 700;
+			color: #f0c040;
+			letter-spacing: 1px;
+		}
+
+		.header p {
+			font-size: 13px;
+			color: rgba(255,255,255,0.4);
+			margin-top: 2px;
+		}
+
+		/* ── GAME WRAPPER ── */
+		#game-wrapper {
+			position: relative;
+			width: 100%;
+			max-width: 1080px;
+			margin: 0 auto;
+			background: #000;
+			border-radius: 8px;
+			overflow: hidden;
+		}
+
+		#canvas {
+			display: block;
+			margin: 0 auto;
+			color: white;
+			width: 100%;
+			height: auto;
+			touch-action: none;
+		}
+
+		#canvas:focus { outline: none; }
+
+		/* ── FOOTER ── */
+		.footer {
+			width: 100%;
+			max-width: 1080px;
+			padding: 16px 20px 32px;
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			align-items: center;
+			gap: 16px;
+			font-size: 13px;
+			color: rgba(255,255,255,0.3);
+		}
+
+		.footer a {
+			color: rgba(255,255,255,0.45);
+			text-decoration: none;
+			transition: color 0.2s;
+		}
+
+		.footer a:hover { color: rgba(255,255,255,0.8); }
+
+		/* ── KO-FI / DONATION ── */
+		.donate-btn {
+			display: inline-block;
+			padding: 8px 18px;
+			background: #ff5e5b;
+			color: #fff !important;
+			border-radius: 20px;
+			font-size: 13px;
+			font-weight: 600;
+			transition: opacity 0.2s;
+		}
+
+		.donate-btn:hover { opacity: 0.85; }
+
+		/* ── GODOT STATUS (inherited) ── */
+		.godot {
+			font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+			color: #e0e0e0;
+			background-color: #3b3943;
+			background-image: linear-gradient(to bottom, #403e48, #35333c);
+			border: 1px solid #45434e;
+			box-shadow: 0 0 1px 1px #2f2d35;
+		}
+
+		#status {
+			position: absolute;
+			left: 0; top: 0; right: 0; bottom: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			visibility: hidden;
+		}
+
+		#status-progress {
+			width: 366px; height: 7px;
+			background-color: #38363A;
+			border: 1px solid #444246;
+			padding: 1px;
+			box-shadow: 0 0 2px 1px #1B1C22;
+			border-radius: 2px;
+			visibility: visible;
+		}
+
+		@media only screen and (orientation:portrait) {
+			#status-progress { width: 61.8%; }
+		}
+
+		#status-progress-inner {
+			height: 100%; width: 0;
+			box-sizing: border-box;
+			transition: width 0.5s linear;
+			background-color: #202020;
+			border: 1px solid #222223;
+			box-shadow: 0 0 1px 1px #27282E;
+			border-radius: 3px;
+		}
+
+		#status-indeterminate {
+			height: 42px;
+			visibility: visible;
+			position: relative;
+		}
+
+		#status-indeterminate > div {
+			width: 4.5px; height: 0;
+			border-style: solid;
+			border-width: 9px 3px 0 3px;
+			border-color: #2b2b2b transparent transparent transparent;
+			transform-origin: center 21px;
+			position: absolute;
+		}
+
+		#status-indeterminate > div:nth-child(1) { transform: rotate( 22.5deg); }
+		#status-indeterminate > div:nth-child(2) { transform: rotate( 67.5deg); }
+		#status-indeterminate > div:nth-child(3) { transform: rotate(112.5deg); }
+		#status-indeterminate > div:nth-child(4) { transform: rotate(157.5deg); }
+		#status-indeterminate > div:nth-child(5) { transform: rotate(202.5deg); }
+		#status-indeterminate > div:nth-child(6) { transform: rotate(247.5deg); }
+		#status-indeterminate > div:nth-child(7) { transform: rotate(292.5deg); }
+		#status-indeterminate > div:nth-child(8) { transform: rotate(337.5deg); }
+
+		#status-notice {
+			margin: 0 100px; line-height: 1.3;
+			visibility: visible;
+			padding: 4px 6px;
+		}
+	</style>
+
+	<link id='-gd-engine-icon' rel='icon' type='image/png' href='index.icon.png' />
+	<link rel='apple-touch-icon' href='index.apple-touch-icon.png'/>
+</head>
+<body>
+
+	<!-- ═══ HEADER ═══ -->
+	<div class="header">
+		<h1>FREEARCADE</h1>
+		<p>Free online browser games — arcade, puzzle &amp; action</p>
+	</div>
+
+	<!-- ═══ BANNER SOPRA IL GIOCO ═══
+	     Opzionale — auto ads funzionano anche senza.
+	     Per attivarlo: ottieni un ad slot ID da AdSense e
+	     sostituiscilo in data-ad-slot. -->
+	<div class="ad-row">
+		<ins class="adsbygoogle"
+			style="display:inline-block;width:728px;height:90px"
+			data-ad-client="ca-pub-YOUR_PUBLISHER_ID"
+			data-ad-slot="YOUR_AD_SLOT_ID"
+			data-full-width-responsive="true"></ins>
+		<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+	</div>
+
+	<!-- ═══ GIOCO ═══ -->
+	<div id="game-wrapper">
+		<canvas id="canvas">
+			HTML5 canvas appears to be unsupported in the current browser.<br>
+			Please try updating or use a different browser.
+		</canvas>
+
+		<div id="status">
+			<div id="status-progress" style="display: none;" oncontextmenu="event.preventDefault();">
+				<div id="status-progress-inner"></div>
+			</div>
+			<div id="status-indeterminate" style="display: none;" oncontextmenu="event.preventDefault();">
+				<div></div><div></div><div></div><div></div>
+				<div></div><div></div><div></div><div></div>
+			</div>
+			<div id="status-notice" class="godot" style="display: none;"></div>
+		</div>
+	</div>
+
+	<!-- ═══ BANNER SOTTO IL GIOCO ═══ -->
+	<div class="ad-row">
+		<ins class="adsbygoogle"
+			style="display:inline-block;width:728px;height:90px"
+			data-ad-client="ca-pub-YOUR_PUBLISHER_ID"
+			data-ad-slot="YOUR_AD_SLOT_ID"
+			data-full-width-responsive="true"></ins>
+		<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+	</div>
+
+	<!-- ═══ FOOTER + DONATION ═══ -->
+	<div class="footer">
+		<span>&copy; FreeArcade</span>
+		<a href="https://ko-fi.com/YOUR_USERNAME" target="_blank" rel="noopener" class="donate-btn">
+			☕ Support on Ko-fi
+		</a>
+		<a href="https://github.com/donaldkevin765-maker/sistema-bot" target="_blank" rel="noopener">GitHub</a>
+		<span>25 games · free · no download</span>
+	</div>
+
+	<!-- ═══ GODOT ENGINE ═══ -->
+	<script src="index.js"></script>
+	<script>
+		const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":193168,"index.wasm":35708238},"focusCanvas":true,"gdextensionLibs":[]};
+		const engine = new Engine(GODOT_CONFIG);
+
+		(function () {
+			const INDETERMINATE_STATUS_STEP_MS = 100;
+			const statusProgress = document.getElementById('status-progress');
+			const statusProgressInner = document.getElementById('status-progress-inner');
+			const statusIndeterminate = document.getElementById('status-indeterminate');
+			const statusNotice = document.getElementById('status-notice');
+
+			let initializing = true;
+			let statusMode = 'hidden';
+
+			let animationCallbacks = [];
+			function animate(time) {
+				animationCallbacks.forEach((callback) => callback(time));
+				requestAnimationFrame(animate);
+			}
+			requestAnimationFrame(animate);
+
+			function animateStatusIndeterminate(ms) {
+				const i = Math.floor((ms / INDETERMINATE_STATUS_STEP_MS) % 8);
+				if (statusIndeterminate.children[i].style.borderTopColor === '') {
+					Array.prototype.slice.call(statusIndeterminate.children).forEach((child) => {
+						child.style.borderTopColor = '';
+					});
+					statusIndeterminate.children[i].style.borderTopColor = '#dfdfdf';
+				}
+			}
+
+			function setStatusMode(mode) {
+				if (statusMode === mode || !initializing) return;
+				[statusProgress, statusIndeterminate, statusNotice].forEach((elem) => {
+					elem.style.display = 'none';
+				});
+				animationCallbacks = animationCallbacks.filter(function (value) {
+					return (value !== animateStatusIndeterminate);
+				});
+				switch (mode) {
+					case 'progress':
+						statusProgress.style.display = 'block';
+						break;
+					case 'indeterminate':
+						statusIndeterminate.style.display = 'block';
+						animationCallbacks.push(animateStatusIndeterminate);
+						break;
+					case 'notice':
+						statusNotice.style.display = 'block';
+						break;
+					case 'hidden':
+						break;
+					default:
+						throw new Error('Invalid status mode');
+				}
+				statusMode = mode;
+			}
+
+			function setStatusNotice(text) {
+				while (statusNotice.lastChild) {
+					statusNotice.removeChild(statusNotice.lastChild);
+				}
+				const lines = text.split('\n');
+				lines.forEach((line) => {
+					statusNotice.appendChild(document.createTextNode(line));
+					statusNotice.appendChild(document.createElement('br'));
+				});
+			}
+
+			function displayFailureNotice(err) {
+				const msg = err.message || err;
+				console.error(msg);
+				setStatusNotice(msg);
+				setStatusMode('notice');
+				initializing = false;
+			}
+
+			const missing = Engine.getMissingFeatures();
+			if (missing.length !== 0) {
+				const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
+				displayFailureNotice(missingMsg + missing.join('\n'));
+			} else {
+				setStatusMode('indeterminate');
+				engine.startGame({
+					'onProgress': function (current, total) {
+						if (total > 0) {
+							statusProgressInner.style.width = `${(current / total) * 100}%`;
+							setStatusMode('progress');
+							if (current === total) {
+								setTimeout(() => { setStatusMode('indeterminate'); }, 500);
+							}
+						} else {
+							setStatusMode('indeterminate');
+						}
+					},
+				}).then(() => {
+					setStatusMode('hidden');
+					initializing = false;
+				}, displayFailureNotice);
+			}
+		}());
+	</script>
+</body>
+</html>

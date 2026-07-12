@@ -1,0 +1,3 @@
+# Ads.txt per Google AdSense
+# Sostituisci "YOUR_PUBLISHER_ID" con il tuo ID AdSense (es. pub-1234567890123456)
+google.com, pub-YOUR_PUBLISHER_ID, DIRECT, f08c47fec0942fa0

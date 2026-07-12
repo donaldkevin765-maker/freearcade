@@ -1,0 +1,11 @@
+# Godot editor state
+.godot/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node.js (deploy scripts)
+node_modules/
+package-lock.json
+package.json
