@@ -641,7 +641,7 @@
 				<span class="arrow">▶</span> GIOCA ORA
 			</button>
 			<div class="hero-stats">
-				<span>🎮 <strong>4</strong> games</span>
+				<span>🎮 <strong>8</strong> games</span>
 				<span>⚡ <strong>Instant</strong> load</span>
 				<span>💰 <strong>Free</strong></span>
 			</div>
@@ -678,6 +678,22 @@
 			<div class="stat-item">
 				<div class="stat-label">🐍 Snake Evolved</div>
 				<div class="stat-value" id="statSnakeEvolved">0</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-label">💥 Arena Shooter</div>
+				<div class="stat-value" id="statArenaShooter">0</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-label">🔫 Run n' Gun</div>
+				<div class="stat-value" id="statRunGun">0</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-label">🎯 Twin-Stick</div>
+				<div class="stat-value" id="statTwinStick">0</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-label">🏰 Fortress</div>
+				<div class="stat-value" id="statFortress">0</div>
 			</div>
 			<div class="stat-item">
 				<div class="stat-label">⏱ Play Time</div>
@@ -798,6 +814,75 @@
 				</div>
 			</div>
 
+
+			<div class="game-card" data-game="ArenaShooter">
+				<div class="thumb" style="background:linear-gradient(135deg,#1a0a0a,#2a0a1a);">
+					<div class="overlay-glow"></div>
+					💥
+				</div>
+				<div class="play-overlay"><span>▶ PLAY</span></div>
+				<div class="game-info">
+					<div class="game-name">Arena Shooter</div>
+					<div class="game-desc">360° wave survival with turret deployment, 6 cycling weapons, and a unique core-buff system. Collect enemy drops to power up mid-run.</div>
+					<div class="game-meta">
+						<span>ACTION</span>
+						<span class="levels">∞ WAVES</span>
+						<span>KEYBOARD</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="game-card" data-game="RunGun">
+				<div class="thumb" style="background:linear-gradient(135deg,#1a1a0a,#2a1a0a);">
+					<div class="overlay-glow"></div>
+					🔫
+				</div>
+				<div class="play-overlay"><span>▶ PLAY</span></div>
+				<div class="game-info">
+					<div class="game-name">Run n' Gun</div>
+					<div class="game-desc">Side-scrolling platform shooter with a Style Chain combo system. Chain melee, slide, air-shots, and grenades for massive scores!</div>
+					<div class="game-meta">
+						<span>ACTION</span>
+						<span class="levels">∞ WAVES</span>
+						<span>KEYBOARD</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="game-card" data-game="TwinStick">
+				<div class="thumb" style="background:linear-gradient(135deg,#0a0a1a,#0a1a2a);">
+					<div class="overlay-glow"></div>
+					🎯
+				</div>
+				<div class="play-overlay"><span>▶ PLAY</span></div>
+				<div class="game-info">
+					<div class="game-name">Twin-Stick</div>
+					<div class="game-desc">360° aiming with elemental bullets. Cycle fire/ice/lightning/void to exploit enemy weaknesses. Chain lightning, burn, and pull enemies together.</div>
+					<div class="game-meta">
+						<span>ACTION</span>
+						<span class="levels">∞ WAVES</span>
+						<span>KEYBOARD</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="game-card" data-game="Fortress">
+				<div class="thumb" style="background:linear-gradient(135deg,#0a1a0a,#0a2a1a);">
+					<div class="overlay-glow"></div>
+					🏰
+				</div>
+				<div class="play-overlay"><span>▶ PLAY</span></div>
+				<div class="game-info">
+					<div class="game-name">Fortress Survival</div>
+					<div class="game-desc">Gather resources, build walls & traps, craft weapons, and survive enemy waves in a shrinking storm zone. Fortnite-inspired building strategy.</div>
+					<div class="game-meta">
+						<span>STRATEGY</span>
+						<span class="levels">∞ WAVES</span>
+						<span>KEYBOARD</span>
+					</div>
+				</div>
+			</div>
+
 		</div>
 	</section>
 
@@ -805,7 +890,7 @@
 	<div class="footer">
 		<span>&copy; FreeArcade</span>
 		<a href="https://github.com/donaldkevin765-maker/freearcade" target="_blank" rel="noopener">GitHub</a>
-		<span>4 games · free · no download</span>
+		<span>8 games · free · no download</span>
 	</div>
 
 	<!-- ═══ SAVE SYSTEM + GAME ENGINE + GAME MODULES ═══ -->
@@ -815,6 +900,10 @@
 	<script src="games/block-breaker.js"></script>
 	<script src="games/maze-runner.js"></script>
 	<script src="games/snake-evolved.js"></script>
+	<script src="games/arena-shooter.js"></script>
+	<script src="games/rungun.js"></script>
+	<script src="games/twin-stick.js"></script>
+	<script src="games/fortress.js"></script>
 
 	<script>
 	(function () {
@@ -822,10 +911,14 @@
 
 		/* ── Game info lookup ── */
 		var gameMap = {
-			SpaceBlaster: { module: window.SpaceBlaster, name: 'Space Blaster' },
-			BlockBreaker: { module: window.BlockBreaker, name: 'Block Breaker' },
-			MazeRunner:   { module: window.MazeRunner,   name: 'Maze Runner' },
-			SnakeEvolved: { module: window.SnakeEvolved, name: 'Snake Evolved' },
+			SpaceBlaster:  { module: window.SpaceBlaster,  name: 'Space Blaster' },
+			BlockBreaker:  { module: window.BlockBreaker,  name: 'Block Breaker' },
+			MazeRunner:    { module: window.MazeRunner,    name: 'Maze Runner' },
+			SnakeEvolved:  { module: window.SnakeEvolved,  name: 'Snake Evolved' },
+			ArenaShooter:  { module: window.ArenaShooter,  name: 'Arena Shooter' },
+			RunGun:        { module: window.RunGun,        name: "Run n' Gun" },
+			TwinStick:     { module: window.TwinStickShooter, name: 'Twin-Stick' },
+			Fortress:      { module: window.FortressSurvival, name: 'Fortress Survival' },
 		};
 
 		/* ── DOM refs ── */
@@ -947,6 +1040,10 @@
 				var mt = save.getBestMazeTime();
 				document.getElementById('statMazeRunner').textContent = mt >= 999998 ? '--' : Math.floor(mt) + 's';
 				document.getElementById('statSnakeEvolved').textContent = save.getHighScore('SnakeEvolved');
+				document.getElementById('statArenaShooter').textContent = save.getHighScore('ArenaShooter');
+				document.getElementById('statRunGun').textContent = save.getHighScore('RunGun');
+				document.getElementById('statTwinStick').textContent = save.getHighScore('TwinStick');
+				document.getElementById('statFortress').textContent = save.getHighScore('Fortress');
 				var hours = Math.floor(save.getTotalPlayTime() / 3600);
 				document.getElementById('statPlayTime').textContent = hours + 'h';
 				document.getElementById('coinDisplay').textContent = '🪙 ' + save.getCoins();
