@@ -5,13 +5,13 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
 	<title>FreeArcade — Free Online Browser Games</title>
-	<meta name="description" content="FreeArcade: play 25 free browser games online — arcade, puzzle, action & strategy. No download needed. New games added regularly.">
+	<meta name="description" content="FreeArcade: play free browser games online — arcade, puzzle, action & strategy. No download needed. New games added regularly.">
 	<meta name="keywords" content="free online games, browser games, free arcade, arcade games, puzzle games, action games, no download games">
 	<meta name="robots" content="index, follow">
 
 	<!-- Open Graph -->
 	<meta property="og:title" content="FreeArcade — Free Online Browser Games">
-	<meta property="og:description" content="FreeArcade: 25 free browser games online. Arcade, puzzle, action & more. No download needed.">
+	<meta property="og:description" content="FreeArcade: free browser games online. Arcade, puzzle, action & more. No download needed.">
 	<meta property="og:type" content="website">
 	<meta property="og:url" content="https://freearcade-two.vercel.app/">
 	<meta property="og:image" content="https://freearcade-two.vercel.app/index.png">
@@ -24,7 +24,7 @@
 		"name": "FreeArcade",
 		"alternateName": "FreeArcade Games",
 		"url": "https://freearcade-two.vercel.app/",
-		"description": "25 free browser games online — arcade, puzzle, action & strategy. No download needed.",
+		"description": "Free browser games online — arcade, puzzle, action & strategy. No download needed.",
 		"inLanguage": ["en", "it"],
 		"genre": ["Arcade", "Puzzle", "Action", "Strategy", "Casual"],
 		"applicationCategory": "Game",
@@ -253,9 +253,7 @@
 			box-shadow: 0 0 35px rgba(240,192,64,0.4), inset 0 0 20px rgba(255,255,255,0.15);
 		}
 		.hero-play-btn:active { transform: scale(0.96); }
-		.hero-play-btn .arrow {
-			font-size: 16px;
-		}
+		.hero-play-btn .arrow { font-size: 16px; }
 
 		/* ── CRT MONITOR FRAME ── */
 		.crt-frame {
@@ -325,10 +323,9 @@
 			font-weight: 600;
 		}
 
-		/* Ensure scroll works on main page, touch-action only for canvas */
 		body.playing { touch-action: none; }
 
-		/* ── GAME AREA (hidden until play) ── */
+		/* ── GAME AREA ── */
 		.game-area {
 			width: 100%;
 			max-width: 1200px;
@@ -346,8 +343,13 @@
 		.game-bar h3 {
 			font-family: 'Orbitron', sans-serif;
 			font-weight: 700;
-			font-size: 16px;
+			font-size: 14px;
 			color: var(--gold);
+		}
+		.game-bar .game-name {
+			color: var(--text);
+			font-weight: 400;
+			font-size: 12px;
 		}
 		.game-bar .back-btn {
 			padding: 8px 18px;
@@ -379,7 +381,7 @@
 		#game-wrapper {
 			position: relative;
 			width: 100%;
-			max-width: 1080px;
+			max-width: 640px;
 			margin: 0 auto;
 			background: #000;
 			border-radius: var(--radius);
@@ -395,132 +397,125 @@
 			touch-action: none;
 		}
 		#canvas:focus { outline: none; }
-
-		/* Godot status (inherited) */
-		.godot {
-			font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
-			color: #e0e0e0;
-			background-color: #3b3943;
-			background-image: linear-gradient(to bottom, #403e48, #35333c);
-			border: 1px solid #45434e;
-			box-shadow: 0 0 1px 1px #2f2d35;
-		}
-		#status {
-			position: absolute;
-			left: 0; top: 0; right: 0; bottom: 0;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			visibility: hidden;
-		}
-		#status-progress {
-			width: 366px; height: 7px;
-			background-color: #38363A;
-			border: 1px solid #444246;
-			padding: 1px;
-			box-shadow: 0 0 2px 1px #1B1C22;
-			border-radius: 2px;
-			visibility: visible;
-		}
-		@media only screen and (orientation:portrait) {
-			#status-progress { width: 61.8%; }
-		}
-		#status-progress-inner {
-			height: 100%; width: 0;
-			box-sizing: border-box;
-			transition: width 0.5s linear;
-			background-color: #202020;
-			border: 1px solid #222223;
-			box-shadow: 0 0 1px 1px #27282E;
-			border-radius: 3px;
-		}
-		#status-indeterminate {
-			height: 42px;
-			visibility: visible;
-			position: relative;
-		}
-		#status-indeterminate > div {
-			width: 4.5px; height: 0;
-			border-style: solid;
-			border-width: 9px 3px 0 3px;
-			border-color: #2b2b2b transparent transparent transparent;
-			transform-origin: center 21px;
-			position: absolute;
-		}
-		#status-indeterminate > div:nth-child(1) { transform: rotate( 22.5deg); }
-		#status-indeterminate > div:nth-child(2) { transform: rotate( 67.5deg); }
-		#status-indeterminate > div:nth-child(3) { transform: rotate(112.5deg); }
-		#status-indeterminate > div:nth-child(4) { transform: rotate(157.5deg); }
-		#status-indeterminate > div:nth-child(5) { transform: rotate(202.5deg); }
-		#status-indeterminate > div:nth-child(6) { transform: rotate(247.5deg); }
-		#status-indeterminate > div:nth-child(7) { transform: rotate(292.5deg); }
-		#status-indeterminate > div:nth-child(8) { transform: rotate(337.5deg); }
-		#status-notice {
-			margin: 0 100px; line-height: 1.3;
-			visibility: visible;
-			padding: 4px 6px;
+		.game-hint {
+			text-align: center;
+			padding: 16px;
+			font-size: 12px;
+			color: var(--text-dim);
+			font-family: 'Press Start 2P', monospace;
 		}
 
-		/* ── CATEGORIES ── */
-		.categories {
+		/* ── GAMES GRID (replaces categories) ── */
+		.games-section {
 			width: 100%;
 			max-width: 1200px;
 			padding: 40px 24px 60px;
 		}
-		.categories h3 {
+		.games-section h3 {
 			font-family: 'Orbitron', sans-serif;
 			font-weight: 700;
 			font-size: 18px;
 			margin-bottom: 20px;
 			color: var(--text);
 		}
-		.categories h3 span { color: var(--text-dim); font-weight: 400; }
-		.cat-grid {
+		.games-section h3 span { color: var(--text-dim); font-weight: 400; }
+		.game-grid {
 			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-			gap: 16px;
+			grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+			gap: 20px;
 		}
-		.cat-card {
+		.game-card {
 			position: relative;
-			padding: 28px 16px;
+			padding: 0;
 			border-radius: var(--radius);
 			background: var(--bg-card);
 			border: 1px solid rgba(255,255,255,0.04);
-			text-align: center;
 			cursor: pointer;
 			transition: all var(--transition);
 			overflow: hidden;
+			display: flex;
+			flex-direction: column;
 		}
-		.cat-card:hover {
+		.game-card:hover {
 			background: var(--bg-card-hover);
-			border-color: rgba(255,255,255,0.1);
-			transform: translateY(-2px);
+			border-color: rgba(255,255,255,0.12);
+			transform: translateY(-3px);
+			box-shadow: 0 8px 30px rgba(0,0,0,0.3);
 		}
-		.cat-card .icon {
-			font-size: 32px;
-			margin-bottom: 10px;
-			display: block;
+		.game-card .thumb {
+			width: 100%;
+			height: 140px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 56px;
+			position: relative;
+			overflow: hidden;
 		}
-		.cat-card .name {
-			font-size: 14px;
-			font-weight: 600;
+		.game-card .thumb .overlay-glow {
+			position: absolute;
+			top: 0; left: 0; width: 100%; height: 100%;
+			background: radial-gradient(circle at 50% 60%, rgba(255,255,255,0.04) 0%, transparent 70%);
+		}
+		.game-card .game-info {
+			padding: 16px;
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+		}
+		.game-card .game-name {
+			font-size: 15px;
+			font-weight: 700;
+			color: var(--text);
 			margin-bottom: 4px;
 		}
-		.cat-card .count {
+		.game-card .game-desc {
 			font-size: 12px;
 			color: var(--text-dim);
+			line-height: 1.4;
+			margin-bottom: 10px;
+			flex: 1;
 		}
-		.cat-card .soon {
-			position: absolute;
-			top: 8px;
-			right: 8px;
-			padding: 2px 8px;
-			border-radius: 6px;
-			background: rgba(255,255,255,0.06);
+		.game-card .game-meta {
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+		}
+		.game-card .game-meta span {
+			padding: 3px 8px;
+			border-radius: 4px;
 			font-size: 10px;
 			font-weight: 600;
+			background: rgba(255,255,255,0.05);
+			border: 1px solid rgba(255,255,255,0.06);
 			color: var(--text-dim);
-			letter-spacing: 0.3px;
+		}
+		.game-card .game-meta .levels {
+			background: rgba(0,255,136,0.1);
+			border-color: rgba(0,255,136,0.15);
+			color: #44ff88;
+		}
+		.game-card .play-overlay {
+			position: absolute;
+			top: 0; left: 0; width: 100%; height: 100%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: rgba(0,0,0,0.6);
+			opacity: 0;
+			transition: opacity var(--transition);
+		}
+		.game-card:hover .play-overlay {
+			opacity: 1;
+		}
+		.game-card .play-overlay span {
+			padding: 10px 24px;
+			border: 2px solid var(--gold);
+			border-radius: 4px;
+			color: var(--gold);
+			font-family: 'Press Start 2P', monospace;
+			font-size: 11px;
+			background: rgba(10,10,20,0.8);
 		}
 
 		/* ── FOOTER ── */
@@ -549,11 +544,20 @@
 			from { opacity: 0; transform: translateY(20px); }
 			to { opacity: 1; transform: translateY(0); }
 		}
+
+		/* ── RESPONSIVE ── */
+		@media (max-width: 680px) {
+			.game-grid {
+				grid-template-columns: 1fr;
+			}
+			.game-card .thumb {
+				height: 100px;
+				font-size: 40px;
+			}
+		}
 	</style>
 
-	<!-- Monetization -->
 	<script src="monetization.js"></script>
-
 	<link id='-gd-engine-icon' rel='icon' type='image/png' href='index.icon.png' />
 	<link rel='apple-touch-icon' href='index.apple-touch-icon.png'/>
 </head>
@@ -576,22 +580,22 @@
 	<!-- ═══ HERO ═══ -->
 	<section class="hero" id="hero">
 		<div class="hero-left">
-			<div class="hero-badge">✦ 25 FREE GAMES</div>
+			<div class="hero-badge">✦ 4 FREE GAMES</div>
 			<h2>RETRO ARCADE<br><span class="retro-accent">PLAY FREE</span></h2>
-			<p>No downloads, no sign-ups — just classic browser games that load instantly. Arcade, puzzle, action &amp; more.</p>
+			<p>No downloads, no sign-ups — original retro-style browser games that load instantly. Arcade action, puzzles &amp; more.</p>
 			<div class="hero-tags">
 				<span class="hot">🔥 ARCADE</span>
 				<span>🎮 ACTION</span>
 				<span>🧩 PUZZLE</span>
-				<span>🧠 STRATEGY</span>
+				<span>🐍 CLASSIC</span>
 			</div>
 			<div class="hero-stars">★★★★★ <span style="color:var(--text-dim);font-size:12px;letter-spacing:0;">4.5 (128)</span></div>
 			<button class="hero-play-btn" id="playBtn">
 				<span class="arrow">▶</span> GIOCA ORA
 			</button>
 			<div class="hero-stats">
-				<span>🎮 <strong>25</strong> games</span>
-				<span>⚡ <strong>35K+</strong> plays</span>
+				<span>🎮 <strong>4</strong> games</span>
+				<span>⚡ <strong>Instant</strong> load</span>
 				<span>💰 <strong>Free</strong></span>
 			</div>
 		</div>
@@ -608,7 +612,7 @@
 	<!-- ═══ GAME AREA ═══ -->
 	<section class="game-area" id="gameArea">
 		<div class="game-bar">
-			<h3>▶ FREEARCADE</h3>
+			<h3>▶ FREEARCADE <span class="game-name" id="currentGameLabel">— Select a game</span></h3>
 			<button class="back-btn" id="backBtn">← Back to games</button>
 		</div>
 
@@ -629,17 +633,8 @@
 				HTML5 canvas appears to be unsupported in the current browser.<br>
 				Please try updating or use a different browser.
 			</canvas>
-			<div id="status">
-				<div id="status-progress" style="display: none;" oncontextmenu="event.preventDefault();">
-					<div id="status-progress-inner"></div>
-				</div>
-				<div id="status-indeterminate" style="display: none;" oncontextmenu="event.preventDefault();">
-					<div></div><div></div><div></div><div></div>
-					<div></div><div></div><div></div><div></div>
-				</div>
-				<div id="status-notice" class="godot" style="display: none;"></div>
-			</div>
 		</div>
+		<div class="game-hint" id="gameHint">← → ↑ ↓ Space · Touch controls supported</div>
 
 		<!-- AD BOTTOM -->
 		<div class="ad-row">
@@ -653,46 +648,79 @@
 		</div>
 	</section>
 
-	<!-- ═══ CATEGORIES ═══ -->
-	<section class="categories" id="categories">
-		<h3>Browse by category <span>— more coming soon</span></h3>
-		<div class="cat-grid">
-			<div class="cat-card">
-				<span class="soon">NEW</span>
-				<span class="icon">🎮</span>
-				<div class="name">Arcade</div>
-				<div class="count">2 games</div>
+	<!-- ═══ GAMES GRID ═══ -->
+	<section class="games-section" id="gamesSection">
+		<h3>Choose your game <span>— all original, all free</span></h3>
+		<div class="game-grid">
+
+			<div class="game-card" data-game="SpaceBlaster">
+				<div class="thumb" style="background:linear-gradient(135deg,#0a0a2a,#1a0a3a);">
+					<div class="overlay-glow"></div>
+					🚀
+				</div>
+				<div class="play-overlay"><span>▶ PLAY</span></div>
+				<div class="game-info">
+					<div class="game-name">Space Blaster</div>
+					<div class="game-desc">Side-scrolling space shooter. Blast enemy waves, upgrade your ship, survive increasingly difficult levels.</div>
+					<div class="game-meta">
+						<span>ARCADE</span>
+						<span class="levels">∞ LEVELS</span>
+						<span>KEYBOARD</span>
+					</div>
+				</div>
 			</div>
-			<div class="cat-card">
-				<span class="soon">SOON</span>
-				<span class="icon">🧩</span>
-				<div class="name">Puzzle</div>
-				<div class="count">0 games</div>
+
+			<div class="game-card" data-game="BlockBreaker">
+				<div class="thumb" style="background:linear-gradient(135deg,#0a1a2a,#0a0a3a);">
+					<div class="overlay-glow"></div>
+					🧱
+				</div>
+				<div class="play-overlay"><span>▶ PLAY</span></div>
+				<div class="game-info">
+					<div class="game-name">Block Breaker</div>
+					<div class="game-desc">Classic breakout with power-ups, multiple brick types, and 5 unique level layouts.</div>
+					<div class="game-meta">
+						<span>PUZZLE</span>
+						<span class="levels">5 LEVELS</span>
+						<span>KEYBOARD</span>
+					</div>
+				</div>
 			</div>
-			<div class="cat-card">
-				<span class="soon">SOON</span>
-				<span class="icon">⚔️</span>
-				<div class="name">Action</div>
-				<div class="count">0 games</div>
+
+			<div class="game-card" data-game="MazeRunner">
+				<div class="thumb" style="background:linear-gradient(135deg,#0a1a1a,#002233);">
+					<div class="overlay-glow"></div>
+					🌀
+				</div>
+				<div class="play-overlay"><span>▶ PLAY</span></div>
+				<div class="game-info">
+					<div class="game-name">Maze Runner</div>
+					<div class="game-desc">Navigate procedurally generated mazes. Every level is a new labyrinth that gets bigger and harder.</div>
+					<div class="game-meta">
+						<span>PUZZLE</span>
+						<span class="levels">∞ LEVELS</span>
+						<span>KEYBOARD</span>
+					</div>
+				</div>
 			</div>
-			<div class="cat-card">
-				<span class="soon">SOON</span>
-				<span class="icon">🧠</span>
-				<div class="name">Strategy</div>
-				<div class="count">0 games</div>
+
+			<div class="game-card" data-game="SnakeEvolved">
+				<div class="thumb" style="background:linear-gradient(135deg,#0a2a1a,#1a2a0a);">
+					<div class="overlay-glow"></div>
+					🐍
+				</div>
+				<div class="play-overlay"><span>▶ PLAY</span></div>
+				<div class="game-info">
+					<div class="game-name">Snake Evolved</div>
+					<div class="game-desc">Classic snake reimagined with obstacles, speed boost, and progressive difficulty. Eat fruits to advance.</div>
+					<div class="game-meta">
+						<span>CLASSIC</span>
+						<span class="levels">∞ LEVELS</span>
+						<span>KEYBOARD</span>
+					</div>
+				</div>
 			</div>
-			<div class="cat-card">
-				<span class="soon">SOON</span>
-				<span class="icon">🏎️</span>
-				<div class="name">Racing</div>
-				<div class="count">0 games</div>
-			</div>
-			<div class="cat-card">
-				<span class="soon">SOON</span>
-				<span class="icon">🎯</span>
-				<div class="name">Shooting</div>
-				<div class="count">0 games</div>
-			</div>
+
 		</div>
 	</section>
 
@@ -700,146 +728,136 @@
 	<div class="footer">
 		<span>&copy; FreeArcade</span>
 		<a href="https://github.com/donaldkevin765-maker/freearcade" target="_blank" rel="noopener">GitHub</a>
-		<span>25 games · free · no download</span>
+		<span>4 games · free · no download</span>
 	</div>
 
-	<!-- ═══ GODOT ENGINE ═══ -->
-	<script src="index.js"></script>
+	<!-- ═══ GAME ENGINE + GAME MODULES ═══ -->
+	<script src="games/engine.js"></script>
+	<script src="games/space-blaster.js"></script>
+	<script src="games/block-breaker.js"></script>
+	<script src="games/maze-runner.js"></script>
+	<script src="games/snake-evolved.js"></script>
+
 	<script>
-		(function () {
-			'use strict';
+	(function () {
+		'use strict';
 
-			const INDETERMINATE_STATUS_STEP_MS = 100;
-			var engine = null;
-			var gameStarted = false;
-			var initializing = true;
-			var statusMode = 'hidden';
+		/* ── Game info lookup ── */
+		var gameMap = {
+			SpaceBlaster: { module: window.SpaceBlaster, name: 'Space Blaster' },
+			BlockBreaker: { module: window.BlockBreaker, name: 'Block Breaker' },
+			MazeRunner:   { module: window.MazeRunner,   name: 'Maze Runner' },
+			SnakeEvolved: { module: window.SnakeEvolved, name: 'Snake Evolved' },
+		};
 
-			var statusProgress = document.getElementById('status-progress');
-			var statusProgressInner = document.getElementById('status-progress-inner');
-			var statusIndeterminate = document.getElementById('status-indeterminate');
-			var statusNotice = document.getElementById('status-notice');
+		/* ── DOM refs ── */
+		var hero = document.getElementById('hero');
+		var gameArea = document.getElementById('gameArea');
+		var gamesSection = document.getElementById('gamesSection');
+		var playBtn = document.getElementById('playBtn');
+		var backBtn = document.getElementById('backBtn');
+		var currentGameLabel = document.getElementById('currentGameLabel');
+		var gameHint = document.getElementById('gameHint');
+		var canvas = document.getElementById('canvas');
 
-			var animationCallbacks = [];
-			function animate(time) {
-				animationCallbacks.forEach(function (callback) { callback(time); });
-				requestAnimationFrame(animate);
+		var engineInited = false;
+		var currentGameKey = null;
+
+		/* ── Timing/quality helpers ── */
+		var resizeTimeout = null;
+
+		/* ── Arena: set canvas logical size ── */
+		var LOGICAL_W = 480;
+		var LOGICAL_H = 400;
+
+		function sizeCanvas() {
+			var wrapper = document.getElementById('game-wrapper');
+			var maxW = wrapper ? wrapper.clientWidth : 640;
+			var w = Math.min(maxW, 640);
+			var aspect = LOGICAL_W / LOGICAL_H;
+			var h = w / aspect;
+
+			canvas.width = LOGICAL_W;
+			canvas.height = LOGICAL_H;
+			canvas.style.width = Math.floor(w) + 'px';
+			canvas.style.height = Math.floor(h) + 'px';
+		}
+
+		function showGameArea(gameKey) {
+			hero.style.display = 'none';
+			gamesSection.style.display = 'none';
+			gameArea.classList.add('visible');
+			document.body.classList.add('playing');
+			currentGameLabel.textContent = '— ' + gameMap[gameKey].name;
+
+			gameHint.textContent = '← → ↑ ↓ to move · Space/Enter to action · Touch swipes supported';
+
+			gameArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+			// Init engine once
+			if (!engineInited) {
+				sizeCanvas();
+				FreeArcadeEngine.init('canvas');
+				engineInited = true;
 			}
-			requestAnimationFrame(animate);
 
-			function animateStatusIndeterminate(ms) {
-				var i = Math.floor((ms / INDETERMINATE_STATUS_STEP_MS) % 8);
-				if (statusIndeterminate.children[i].style.borderTopColor === '') {
-					Array.prototype.slice.call(statusIndeterminate.children).forEach(function (child) {
-						child.style.borderTopColor = '';
-					});
-					statusIndeterminate.children[i].style.borderTopColor = '#dfdfdf';
+			// Load game
+			currentGameKey = gameKey;
+			setTimeout(function () {
+				FreeArcadeEngine.loadGame(gameMap[gameKey].module);
+			}, 100);
+		}
+
+		function hideGameArea() {
+			gameArea.classList.remove('visible');
+			document.body.classList.remove('playing');
+			hero.style.display = '';
+			gamesSection.style.display = '';
+			currentGameLabel.textContent = '— Select a game';
+
+			if (currentGameKey) {
+				FreeArcadeEngine.loadGame(null); // unload
+				currentGameKey = null;
+			}
+
+			hero.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
+
+		/* ── Click handlers ── */
+
+		// Game cards
+		document.querySelectorAll('.game-card').forEach(function (card) {
+			card.addEventListener('click', function () {
+				var gameKey = card.getAttribute('data-game');
+				if (gameKey && gameMap[gameKey]) {
+					showGameArea(gameKey);
 				}
-			}
-
-			function setStatusMode(mode) {
-				if (statusMode === mode || !initializing) return;
-				[statusProgress, statusIndeterminate, statusNotice].forEach(function (elem) {
-					elem.style.display = 'none';
-				});
-				animationCallbacks = animationCallbacks.filter(function (value) {
-					return (value !== animateStatusIndeterminate);
-				});
-				switch (mode) {
-					case 'progress': statusProgress.style.display = 'block'; break;
-					case 'indeterminate':
-						statusIndeterminate.style.display = 'block';
-						animationCallbacks.push(animateStatusIndeterminate);
-						break;
-					case 'notice': statusNotice.style.display = 'block'; break;
-					case 'hidden': break;
-					default: throw new Error('Invalid status mode');
-				}
-				statusMode = mode;
-			}
-
-			function setStatusNotice(text) {
-				while (statusNotice.lastChild) {
-					statusNotice.removeChild(statusNotice.lastChild);
-				}
-				var lines = text.split('\n');
-				lines.forEach(function (line) {
-					statusNotice.appendChild(document.createTextNode(line));
-					statusNotice.appendChild(document.createElement('br'));
-				});
-			}
-
-			function displayFailureNotice(err) {
-				var msg = err.message || err;
-				console.error(msg);
-				setStatusNotice(msg);
-				setStatusMode('notice');
-				initializing = false;
-			}
-
-			function startGame() {
-				if (gameStarted) return;
-				gameStarted = true;
-
-				var missing = Engine.getMissingFeatures();
-				if (missing.length !== 0) {
-					var missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
-					displayFailureNotice(missingMsg + missing.join('\n'));
-					return;
-				}
-
-				engine = new Engine({
-					"args":[],"canvasResizePolicy":2,"executable":"index","experimentalVK":false,
-					"fileSizes":{"index.pck":193168,"index.wasm":35708238},
-					"focusCanvas":true,"gdextensionLibs":[]
-				});
-
-				setStatusMode('indeterminate');
-				engine.startGame({
-					'onProgress': function (current, total) {
-						if (total > 0) {
-							statusProgressInner.style.width = (current / total * 100) + '%';
-							setStatusMode('progress');
-							if (current === total) {
-								setTimeout(function () { setStatusMode('indeterminate'); }, 500);
-							}
-						} else {
-							setStatusMode('indeterminate');
-						}
-					}
-				}).then(function () {
-					setStatusMode('hidden');
-					initializing = false;
-				}, displayFailureNotice);
-			}
-
-			// ── HERO / GAME TRANSITION ──
-			var hero = document.getElementById('hero');
-			var gameArea = document.getElementById('gameArea');
-			var playBtn = document.getElementById('playBtn');
-			var backBtn = document.getElementById('backBtn');
-			var catSection = document.getElementById('categories');
-
-			playBtn.addEventListener('click', function () {
-				hero.style.display = 'none';
-				catSection.style.display = 'none';
-				gameArea.classList.add('visible');
-				document.body.classList.add('playing');
-				// Scroll to top of game
-				gameArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
-				// Start Godot engine
-				setTimeout(startGame, 300);
 			});
+		});
 
-			backBtn.addEventListener('click', function () {
-				gameArea.classList.remove('visible');
-				document.body.classList.remove('playing');
-				hero.style.display = '';
-				catSection.style.display = '';
-				hero.scrollIntoView({ behavior: 'smooth', block: 'start' });
-			});
+		// Hero "GIOCA ORA" → scroll to games section
+		playBtn.addEventListener('click', function () {
+			gamesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		});
 
-		})();
+		// Back button
+		backBtn.addEventListener('click', hideGameArea);
+
+		// Resize handler
+		window.addEventListener('resize', function () {
+			if (engineInited) {
+				clearTimeout(resizeTimeout);
+				resizeTimeout = setTimeout(sizeCanvas, 200);
+			}
+		});
+
+		// Keyboard Escape → back
+		document.addEventListener('keydown', function (e) {
+			if (e.key === 'Escape' && gameArea.classList.contains('visible')) {
+				hideGameArea();
+			}
+		});
+	})();
 	</script>
 
 </body>
