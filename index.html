@@ -47,9 +47,9 @@
 		crossorigin="anonymous"></script>
 
 	<!-- Google Fonts -->
-	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet" crossorigin>
 
 	<style>
 		:root {
@@ -119,92 +119,214 @@
 		.nav-links a:hover { color: var(--text); }
 		.nav-links a.active { color: var(--gold); }
 
+		/* ── CRT SCAN OVERLAY ── */
+		.crt-overlay {
+			position: fixed;
+			top: 0; left: 0;
+			width: 100%; height: 100%;
+			pointer-events: none;
+			z-index: 9999;
+			background: repeating-linear-gradient(
+				0deg,
+				rgba(0,0,0,0.03) 0px,
+				rgba(0,0,0,0.03) 1px,
+				transparent 1px,
+				transparent 3px
+			);
+		}
+
 		/* ── HERO ── */
 		.hero {
 			width: 100%;
 			max-width: 1200px;
-			padding: 60px 24px 40px;
+			padding: 40px 24px 50px;
 			display: flex;
-			flex-direction: column;
+			flex-direction: row;
 			align-items: center;
-			text-align: center;
+			justify-content: center;
+			gap: 40px;
 			position: relative;
+			flex-wrap: wrap;
 		}
 		.hero::before {
 			content: '';
 			position: absolute;
-			top: -40%;
+			top: -30%;
 			left: 50%;
 			transform: translateX(-50%);
-			width: 600px;
+			width: 800px;
 			height: 600px;
-			background: radial-gradient(circle, rgba(240,192,64,0.06) 0%, transparent 70%);
+			background: radial-gradient(circle, rgba(240,192,64,0.05) 0%, transparent 70%);
 			pointer-events: none;
+		}
+		.hero-left {
+			flex: 1;
+			min-width: 280px;
+			max-width: 520px;
+			text-align: left;
+		}
+		.hero-right {
+			flex: 0 0 auto;
 		}
 		.hero-badge {
 			display: inline-flex;
 			align-items: center;
 			gap: 6px;
-			padding: 6px 16px;
-			border-radius: 20px;
-			background: rgba(240,192,64,0.12);
+			padding: 5px 14px;
+			border-radius: 4px;
+			background: rgba(240,192,64,0.1);
 			color: var(--gold);
-			font-size: 12px;
-			font-weight: 600;
+			font-family: 'Press Start 2P', monospace;
+			font-size: 9px;
 			letter-spacing: 0.5px;
-			margin-bottom: 20px;
+			margin-bottom: 16px;
+			border: 1px solid rgba(240,192,64,0.2);
 		}
 		.hero h2 {
 			font-family: 'Orbitron', sans-serif;
-			font-size: clamp(28px, 5vw, 48px);
+			font-size: clamp(26px, 4vw, 42px);
 			font-weight: 900;
-			line-height: 1.15;
-			margin-bottom: 12px;
+			line-height: 1.1;
+			margin-bottom: 10px;
 			background: linear-gradient(135deg, #fff 30%, var(--gold) 100%);
 			-webkit-background-clip: text;
 			-webkit-text-fill-color: transparent;
 			background-clip: text;
 		}
+		.hero h2 .retro-accent {
+			-webkit-text-fill-color: var(--accent2);
+			background: none;
+		}
 		.hero p {
-			font-size: 16px;
+			font-size: 15px;
 			color: var(--text-dim);
-			max-width: 520px;
 			line-height: 1.6;
-			margin-bottom: 28px;
+			margin-bottom: 20px;
+		}
+		.hero-tags {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+			margin-bottom: 20px;
+		}
+		.hero-tags span {
+			padding: 4px 12px;
+			border-radius: 4px;
+			font-size: 11px;
+			font-weight: 600;
+			background: rgba(255,255,255,0.05);
+			border: 1px solid rgba(255,255,255,0.08);
+			color: var(--text-dim);
+		}
+		.hero-tags span.hot {
+			background: rgba(255,107,107,0.12);
+			border-color: rgba(255,107,107,0.25);
+			color: var(--accent);
+		}
+		.hero-stars {
+			color: var(--gold);
+			font-size: 14px;
+			margin-bottom: 18px;
+			letter-spacing: 2px;
 		}
 		.hero-play-btn {
 			display: inline-flex;
 			align-items: center;
 			gap: 10px;
-			padding: 16px 40px;
-			border: none;
-			border-radius: 50px;
+			padding: 14px 36px;
+			border: 2px solid var(--gold);
+			border-radius: 4px;
 			background: linear-gradient(135deg, var(--gold), var(--gold-dim));
 			color: #0a0a14;
-			font-family: 'Orbitron', sans-serif;
-			font-weight: 700;
-			font-size: 16px;
+			font-family: 'Press Start 2P', monospace;
+			font-weight: 400;
+			font-size: 12px;
 			letter-spacing: 1px;
 			cursor: pointer;
 			transition: transform var(--transition), box-shadow var(--transition);
-			box-shadow: 0 4px 24px rgba(240,192,64,0.3);
+			box-shadow: 0 0 20px rgba(240,192,64,0.25), inset 0 0 20px rgba(255,255,255,0.1);
+			text-transform: uppercase;
+			position: relative;
 		}
 		.hero-play-btn:hover {
-			transform: scale(1.05);
-			box-shadow: 0 6px 32px rgba(240,192,64,0.45);
+			transform: scale(1.04);
+			box-shadow: 0 0 35px rgba(240,192,64,0.4), inset 0 0 20px rgba(255,255,255,0.15);
 		}
-		.hero-play-btn:active { transform: scale(0.97); }
+		.hero-play-btn:active { transform: scale(0.96); }
+		.hero-play-btn .arrow {
+			font-size: 16px;
+		}
+
+		/* ── CRT MONITOR FRAME ── */
+		.crt-frame {
+			position: relative;
+			width: 280px;
+			height: 210px;
+			border-radius: 12px;
+			background: #111;
+			padding: 12px;
+			border: 3px solid #333;
+			box-shadow:
+				0 0 0 1px #222,
+				0 0 0 4px #1a1a1a,
+				0 0 30px rgba(240,192,64,0.08),
+				inset 0 0 20px rgba(0,0,0,0.5);
+		}
+		.crt-frame .screen {
+			width: 100%;
+			height: 100%;
+			border-radius: 4px;
+			background: #0a0a0a;
+			overflow: hidden;
+			position: relative;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		.crt-frame .screen img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			opacity: 0.9;
+			image-rendering: pixelated;
+		}
+		.crt-frame .screen::after {
+			content: '';
+			position: absolute;
+			top: 0; left: 0;
+			width: 100%; height: 100%;
+			background: repeating-linear-gradient(
+				0deg,
+				rgba(0,0,0,0.08) 0px,
+				rgba(0,0,0,0.08) 1px,
+				transparent 1px,
+				transparent 3px
+			);
+			pointer-events: none;
+		}
+		.crt-label {
+			position: absolute;
+			bottom: -22px;
+			right: 4px;
+			font-family: 'Press Start 2P', monospace;
+			font-size: 7px;
+			color: rgba(255,255,255,0.15);
+			letter-spacing: 2px;
+		}
 		.hero-stats {
 			display: flex;
-			gap: 32px;
-			margin-top: 24px;
-			font-size: 13px;
+			gap: 24px;
+			margin-top: 16px;
+			font-size: 12px;
 			color: var(--text-dim);
 		}
 		.hero-stats span strong {
 			color: var(--text);
 			font-weight: 600;
 		}
+
+		/* Ensure scroll works on main page, touch-action only for canvas */
+		body.playing { touch-action: none; }
 
 		/* ── GAME AREA (hidden until play) ── */
 		.game-area {
@@ -437,6 +559,9 @@
 </head>
 <body>
 
+	<!-- CRT Scanline overlay -->
+	<div class="crt-overlay"></div>
+
 	<!-- ═══ NAV ═══ -->
 	<nav>
 		<div class="nav-inner">
@@ -450,16 +575,33 @@
 
 	<!-- ═══ HERO ═══ -->
 	<section class="hero" id="hero">
-		<div class="hero-badge">✦ 25 FREE GAMES</div>
-		<h2>Play Free Browser<br>Games Online</h2>
-		<p>Arcade, puzzle, action &amp; strategy — no download, no sign-up. Just click and play instantly.</p>
-		<button class="hero-play-btn" id="playBtn">
-			▶ GIOCA ORA
-		</button>
-		<div class="hero-stats">
-			<span>🎮 <strong>25</strong> games</span>
-			<span>🏆 <strong>4.5</strong> rating</span>
-			<span>⚡ <strong>Free</strong> no download</span>
+		<div class="hero-left">
+			<div class="hero-badge">✦ 25 FREE GAMES</div>
+			<h2>RETRO ARCADE<br><span class="retro-accent">PLAY FREE</span></h2>
+			<p>No downloads, no sign-ups — just classic browser games that load instantly. Arcade, puzzle, action &amp; more.</p>
+			<div class="hero-tags">
+				<span class="hot">🔥 ARCADE</span>
+				<span>🎮 ACTION</span>
+				<span>🧩 PUZZLE</span>
+				<span>🧠 STRATEGY</span>
+			</div>
+			<div class="hero-stars">★★★★★ <span style="color:var(--text-dim);font-size:12px;letter-spacing:0;">4.5 (128)</span></div>
+			<button class="hero-play-btn" id="playBtn">
+				<span class="arrow">▶</span> GIOCA ORA
+			</button>
+			<div class="hero-stats">
+				<span>🎮 <strong>25</strong> games</span>
+				<span>⚡ <strong>35K+</strong> plays</span>
+				<span>💰 <strong>Free</strong></span>
+			</div>
+		</div>
+		<div class="hero-right">
+			<div class="crt-frame">
+				<div class="screen">
+					<img src="index.png" alt="FreeArcade Game">
+				</div>
+				<div class="crt-label">CRT DISPLAY</div>
+			</div>
 		</div>
 	</section>
 
@@ -682,6 +824,7 @@
 				hero.style.display = 'none';
 				catSection.style.display = 'none';
 				gameArea.classList.add('visible');
+				document.body.classList.add('playing');
 				// Scroll to top of game
 				gameArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
 				// Start Godot engine
@@ -690,6 +833,7 @@
 
 			backBtn.addEventListener('click', function () {
 				gameArea.classList.remove('visible');
+				document.body.classList.remove('playing');
 				hero.style.display = '';
 				catSection.style.display = '';
 				hero.scrollIntoView({ behavior: 'smooth', block: 'start' });
