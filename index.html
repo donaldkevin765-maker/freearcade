@@ -4,24 +4,19 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
-	<!-- ════════════════════════════════════════════════
-	     SEO — per farsi trovare su Google
-	     ════════════════════════════════════════════════ -->
 	<title>FreeArcade — Free Online Browser Games</title>
 	<meta name="description" content="FreeArcade: play 25 free browser games online — arcade, puzzle, action & strategy. No download needed. New games added regularly.">
 	<meta name="keywords" content="free online games, browser games, free arcade, arcade games, puzzle games, action games, no download games">
 	<meta name="robots" content="index, follow">
 
-	<!-- Open Graph (per condivisione social) -->
+	<!-- Open Graph -->
 	<meta property="og:title" content="FreeArcade — Free Online Browser Games">
 	<meta property="og:description" content="FreeArcade: 25 free browser games online. Arcade, puzzle, action & more. No download needed.">
 	<meta property="og:type" content="website">
 	<meta property="og:url" content="https://freearcade-two.vercel.app/">
 	<meta property="og:image" content="https://freearcade-two.vercel.app/index.png">
 
-	<!-- ════════════════════════════════════════════════
-	     SCHEMA.ORG — dati strutturati per AI / motori di ricerca
-	     ════════════════════════════════════════════════ -->
+	<!-- Schema.org -->
 	<script type="application/ld+json">
 	{
 		"@context": "https://schema.org",
@@ -47,44 +42,208 @@
 	}
 	</script>
 
-	<!-- ════════════════════════════════════════════════
-	     ADSENSE AUTO ADS — la fonte di guadagno principale
-	     ════════════════════════════════════════════════
-	     ● Google piazza automaticamente annunci anchor (fissi in basso),
-	       vignette (a schermo intero tra le pagine), e in-page.
-	     ● COME ATTIVARE:
-	       1. Vai su https://adsense.google.com e registrati
-	       2. Aggiungi questo sito (donaldkevin765-maker.github.io)
-	       3. Ti danno un ID tipo "ca-pub-1234567890123456"
-	       4. Sostituiscilo qui sotto al posto di "YOUR_PUBLISHER_ID"
-	       5. Metti il file ads.txt nella root (già creato)
-	       6. Aspetta approvazione (1-7 giorni)
-	       DOPO L'APPROVAZIONE gli annunci partono automaticamente.
-	       Guadagno stimato: ~$2-15 RPM (per 1000 visite)
-	     ════════════════════════════════════════════════ -->
+	<!-- AdSense -->
 	<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9629042402517422"
 		crossorigin="anonymous"></script>
 
+	<!-- Google Fonts -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 	<style>
-		/* ── RESET ── */
+		:root {
+			--bg: #0a0a14;
+			--bg-card: #12121f;
+			--bg-card-hover: #1a1a2e;
+			--gold: #f0c040;
+			--gold-dim: #c8a030;
+			--text: #e0e0e0;
+			--text-dim: rgba(255,255,255,0.4);
+			--accent: #ff6b6b;
+			--accent2: #4fc3f7;
+			--radius: 12px;
+			--transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
 		* { margin: 0; padding: 0; box-sizing: border-box; }
 
 		body {
-			touch-action: none;
-			text-align: center;
-			background-color: #0a0a14;
-			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+			font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+			background: var(--bg);
+			color: var(--text);
 			min-height: 100vh;
+			overflow-x: hidden;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			color: #e0e0e0;
 		}
 
-		/* ── BANNER ADS (opzionali — auto ads bastano) ── */
+		a { color: inherit; text-decoration: none; }
+
+		/* ── NAV ── */
+		nav {
+			width: 100%;
+			padding: 12px 24px;
+			display: flex;
+			justify-content: center;
+			position: sticky;
+			top: 0;
+			z-index: 100;
+			background: rgba(10,10,20,0.85);
+			backdrop-filter: blur(12px);
+			border-bottom: 1px solid rgba(255,255,255,0.06);
+		}
+		.nav-inner {
+			width: 100%;
+			max-width: 1200px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+		}
+		.nav-logo {
+			font-family: 'Orbitron', sans-serif;
+			font-weight: 900;
+			font-size: 22px;
+			color: var(--gold);
+			letter-spacing: 2px;
+		}
+		.nav-logo span { color: var(--text); font-weight: 400; }
+		.nav-links { display: flex; gap: 24px; align-items: center; }
+		.nav-links a {
+			font-size: 14px;
+			font-weight: 500;
+			color: var(--text-dim);
+			transition: color var(--transition);
+		}
+		.nav-links a:hover { color: var(--text); }
+		.nav-links a.active { color: var(--gold); }
+
+		/* ── HERO ── */
+		.hero {
+			width: 100%;
+			max-width: 1200px;
+			padding: 60px 24px 40px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			text-align: center;
+			position: relative;
+		}
+		.hero::before {
+			content: '';
+			position: absolute;
+			top: -40%;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 600px;
+			height: 600px;
+			background: radial-gradient(circle, rgba(240,192,64,0.06) 0%, transparent 70%);
+			pointer-events: none;
+		}
+		.hero-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 6px 16px;
+			border-radius: 20px;
+			background: rgba(240,192,64,0.12);
+			color: var(--gold);
+			font-size: 12px;
+			font-weight: 600;
+			letter-spacing: 0.5px;
+			margin-bottom: 20px;
+		}
+		.hero h2 {
+			font-family: 'Orbitron', sans-serif;
+			font-size: clamp(28px, 5vw, 48px);
+			font-weight: 900;
+			line-height: 1.15;
+			margin-bottom: 12px;
+			background: linear-gradient(135deg, #fff 30%, var(--gold) 100%);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+		}
+		.hero p {
+			font-size: 16px;
+			color: var(--text-dim);
+			max-width: 520px;
+			line-height: 1.6;
+			margin-bottom: 28px;
+		}
+		.hero-play-btn {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			padding: 16px 40px;
+			border: none;
+			border-radius: 50px;
+			background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+			color: #0a0a14;
+			font-family: 'Orbitron', sans-serif;
+			font-weight: 700;
+			font-size: 16px;
+			letter-spacing: 1px;
+			cursor: pointer;
+			transition: transform var(--transition), box-shadow var(--transition);
+			box-shadow: 0 4px 24px rgba(240,192,64,0.3);
+		}
+		.hero-play-btn:hover {
+			transform: scale(1.05);
+			box-shadow: 0 6px 32px rgba(240,192,64,0.45);
+		}
+		.hero-play-btn:active { transform: scale(0.97); }
+		.hero-stats {
+			display: flex;
+			gap: 32px;
+			margin-top: 24px;
+			font-size: 13px;
+			color: var(--text-dim);
+		}
+		.hero-stats span strong {
+			color: var(--text);
+			font-weight: 600;
+		}
+
+		/* ── GAME AREA (hidden until play) ── */
+		.game-area {
+			width: 100%;
+			max-width: 1200px;
+			padding: 0 24px 24px;
+			display: none;
+			animation: fadeUp 0.5s ease;
+		}
+		.game-area.visible { display: block; }
+		.game-bar {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			margin-bottom: 12px;
+		}
+		.game-bar h3 {
+			font-family: 'Orbitron', sans-serif;
+			font-weight: 700;
+			font-size: 16px;
+			color: var(--gold);
+		}
+		.game-bar .back-btn {
+			padding: 8px 18px;
+			border: 1px solid rgba(255,255,255,0.12);
+			border-radius: 8px;
+			background: transparent;
+			color: var(--text-dim);
+			font-size: 13px;
+			cursor: pointer;
+			transition: all var(--transition);
+		}
+		.game-bar .back-btn:hover {
+			border-color: var(--gold);
+			color: var(--gold);
+		}
+
 		.ad-row {
 			width: 100%;
-			max-width: 1080px;
 			min-height: 90px;
 			margin: 8px auto;
 			display: flex;
@@ -95,38 +254,16 @@
 			overflow: hidden;
 		}
 
-		/* ── HEADER ── */
-		.header {
-			width: 100%;
-			max-width: 1080px;
-			padding: 16px 20px 8px;
-			text-align: left;
-		}
-
-		.header h1 {
-			font-size: 22px;
-			font-weight: 700;
-			color: #f0c040;
-			letter-spacing: 1px;
-		}
-
-		.header p {
-			font-size: 13px;
-			color: rgba(255,255,255,0.4);
-			margin-top: 2px;
-		}
-
-		/* ── GAME WRAPPER ── */
 		#game-wrapper {
 			position: relative;
 			width: 100%;
 			max-width: 1080px;
 			margin: 0 auto;
 			background: #000;
-			border-radius: 8px;
+			border-radius: var(--radius);
 			overflow: hidden;
+			box-shadow: 0 0 40px rgba(240,192,64,0.08);
 		}
-
 		#canvas {
 			display: block;
 			margin: 0 auto;
@@ -135,32 +272,9 @@
 			height: auto;
 			touch-action: none;
 		}
-
 		#canvas:focus { outline: none; }
 
-		/* ── FOOTER ── */
-		.footer {
-			width: 100%;
-			max-width: 1080px;
-			padding: 16px 20px 32px;
-			display: flex;
-			flex-wrap: wrap;
-			justify-content: center;
-			align-items: center;
-			gap: 16px;
-			font-size: 13px;
-			color: rgba(255,255,255,0.3);
-		}
-
-		.footer a {
-			color: rgba(255,255,255,0.45);
-			text-decoration: none;
-			transition: color 0.2s;
-		}
-
-		.footer a:hover { color: rgba(255,255,255,0.8); }
-
-		/* ── GODOT STATUS (inherited) ── */
+		/* Godot status (inherited) */
 		.godot {
 			font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
 			color: #e0e0e0;
@@ -169,7 +283,6 @@
 			border: 1px solid #45434e;
 			box-shadow: 0 0 1px 1px #2f2d35;
 		}
-
 		#status {
 			position: absolute;
 			left: 0; top: 0; right: 0; bottom: 0;
@@ -178,7 +291,6 @@
 			align-items: center;
 			visibility: hidden;
 		}
-
 		#status-progress {
 			width: 366px; height: 7px;
 			background-color: #38363A;
@@ -188,11 +300,9 @@
 			border-radius: 2px;
 			visibility: visible;
 		}
-
 		@media only screen and (orientation:portrait) {
 			#status-progress { width: 61.8%; }
 		}
-
 		#status-progress-inner {
 			height: 100%; width: 0;
 			box-sizing: border-box;
@@ -202,13 +312,11 @@
 			box-shadow: 0 0 1px 1px #27282E;
 			border-radius: 3px;
 		}
-
 		#status-indeterminate {
 			height: 42px;
 			visibility: visible;
 			position: relative;
 		}
-
 		#status-indeterminate > div {
 			width: 4.5px; height: 0;
 			border-style: solid;
@@ -217,7 +325,6 @@
 			transform-origin: center 21px;
 			position: absolute;
 		}
-
 		#status-indeterminate > div:nth-child(1) { transform: rotate( 22.5deg); }
 		#status-indeterminate > div:nth-child(2) { transform: rotate( 67.5deg); }
 		#status-indeterminate > div:nth-child(3) { transform: rotate(112.5deg); }
@@ -226,15 +333,103 @@
 		#status-indeterminate > div:nth-child(6) { transform: rotate(247.5deg); }
 		#status-indeterminate > div:nth-child(7) { transform: rotate(292.5deg); }
 		#status-indeterminate > div:nth-child(8) { transform: rotate(337.5deg); }
-
 		#status-notice {
 			margin: 0 100px; line-height: 1.3;
 			visibility: visible;
 			padding: 4px 6px;
 		}
+
+		/* ── CATEGORIES ── */
+		.categories {
+			width: 100%;
+			max-width: 1200px;
+			padding: 40px 24px 60px;
+		}
+		.categories h3 {
+			font-family: 'Orbitron', sans-serif;
+			font-weight: 700;
+			font-size: 18px;
+			margin-bottom: 20px;
+			color: var(--text);
+		}
+		.categories h3 span { color: var(--text-dim); font-weight: 400; }
+		.cat-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+			gap: 16px;
+		}
+		.cat-card {
+			position: relative;
+			padding: 28px 16px;
+			border-radius: var(--radius);
+			background: var(--bg-card);
+			border: 1px solid rgba(255,255,255,0.04);
+			text-align: center;
+			cursor: pointer;
+			transition: all var(--transition);
+			overflow: hidden;
+		}
+		.cat-card:hover {
+			background: var(--bg-card-hover);
+			border-color: rgba(255,255,255,0.1);
+			transform: translateY(-2px);
+		}
+		.cat-card .icon {
+			font-size: 32px;
+			margin-bottom: 10px;
+			display: block;
+		}
+		.cat-card .name {
+			font-size: 14px;
+			font-weight: 600;
+			margin-bottom: 4px;
+		}
+		.cat-card .count {
+			font-size: 12px;
+			color: var(--text-dim);
+		}
+		.cat-card .soon {
+			position: absolute;
+			top: 8px;
+			right: 8px;
+			padding: 2px 8px;
+			border-radius: 6px;
+			background: rgba(255,255,255,0.06);
+			font-size: 10px;
+			font-weight: 600;
+			color: var(--text-dim);
+			letter-spacing: 0.3px;
+		}
+
+		/* ── FOOTER ── */
+		.footer {
+			width: 100%;
+			max-width: 1200px;
+			padding: 24px;
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			align-items: center;
+			gap: 20px;
+			font-size: 13px;
+			color: var(--text-dim);
+			border-top: 1px solid rgba(255,255,255,0.04);
+			margin-top: auto;
+		}
+		.footer a {
+			color: rgba(255,255,255,0.45);
+			transition: color var(--transition);
+		}
+		.footer a:hover { color: rgba(255,255,255,0.8); }
+
+		/* ── ANIMATIONS ── */
+		@keyframes fadeUp {
+			from { opacity: 0; transform: translateY(20px); }
+			to { opacity: 1; transform: translateY(0); }
+		}
 	</style>
 
-	<!-- Monetization layer: popunder + push + offer wall -->
+	<!-- Monetization -->
 	<script src="monetization.js"></script>
 
 	<link id='-gd-engine-icon' rel='icon' type='image/png' href='index.icon.png' />
@@ -242,52 +437,122 @@
 </head>
 <body>
 
-	<!-- ═══ HEADER ═══ -->
-	<div class="header">
-		<h1>FREEARCADE</h1>
-		<p>Free online browser games — arcade, puzzle &amp; action</p>
-	</div>
-
-	<!-- ═══ BANNER SOPRA IL GIOCO ═══ -->
-	<div class="ad-row">
-		<ins class="adsbygoogle"
-			style="display:block"
-			data-ad-client="ca-pub-9629042402517422"
-			data-ad-slot="1969908971"
-			data-ad-format="auto"
-			data-full-width-responsive="true"></ins>
-		<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-	</div>
-
-	<!-- ═══ GIOCO ═══ -->
-	<div id="game-wrapper">
-		<canvas id="canvas">
-			HTML5 canvas appears to be unsupported in the current browser.<br>
-			Please try updating or use a different browser.
-		</canvas>
-
-		<div id="status">
-			<div id="status-progress" style="display: none;" oncontextmenu="event.preventDefault();">
-				<div id="status-progress-inner"></div>
+	<!-- ═══ NAV ═══ -->
+	<nav>
+		<div class="nav-inner">
+			<div class="nav-logo">FREE<span>ARCADE</span></div>
+			<div class="nav-links">
+				<a href="#" class="active">All Games</a>
+				<a href="#">Categories</a>
 			</div>
-			<div id="status-indeterminate" style="display: none;" oncontextmenu="event.preventDefault();">
-				<div></div><div></div><div></div><div></div>
-				<div></div><div></div><div></div><div></div>
-			</div>
-			<div id="status-notice" class="godot" style="display: none;"></div>
 		</div>
-	</div>
+	</nav>
 
-	<!-- ═══ BANNER SOTTO IL GIOCO ═══ -->
-	<div class="ad-row">
-		<ins class="adsbygoogle"
-			style="display:block"
-			data-ad-client="ca-pub-9629042402517422"
-			data-ad-slot="4140776745"
-			data-ad-format="auto"
-			data-full-width-responsive="true"></ins>
-		<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-	</div>
+	<!-- ═══ HERO ═══ -->
+	<section class="hero" id="hero">
+		<div class="hero-badge">✦ 25 FREE GAMES</div>
+		<h2>Play Free Browser<br>Games Online</h2>
+		<p>Arcade, puzzle, action &amp; strategy — no download, no sign-up. Just click and play instantly.</p>
+		<button class="hero-play-btn" id="playBtn">
+			▶ GIOCA ORA
+		</button>
+		<div class="hero-stats">
+			<span>🎮 <strong>25</strong> games</span>
+			<span>🏆 <strong>4.5</strong> rating</span>
+			<span>⚡ <strong>Free</strong> no download</span>
+		</div>
+	</section>
+
+	<!-- ═══ GAME AREA ═══ -->
+	<section class="game-area" id="gameArea">
+		<div class="game-bar">
+			<h3>▶ FREEARCADE</h3>
+			<button class="back-btn" id="backBtn">← Back to games</button>
+		</div>
+
+		<!-- AD TOP -->
+		<div class="ad-row">
+			<ins class="adsbygoogle"
+				style="display:block"
+				data-ad-client="ca-pub-9629042402517422"
+				data-ad-slot="1969908971"
+				data-ad-format="auto"
+				data-full-width-responsive="true"></ins>
+			<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+		</div>
+
+		<!-- GAME -->
+		<div id="game-wrapper">
+			<canvas id="canvas">
+				HTML5 canvas appears to be unsupported in the current browser.<br>
+				Please try updating or use a different browser.
+			</canvas>
+			<div id="status">
+				<div id="status-progress" style="display: none;" oncontextmenu="event.preventDefault();">
+					<div id="status-progress-inner"></div>
+				</div>
+				<div id="status-indeterminate" style="display: none;" oncontextmenu="event.preventDefault();">
+					<div></div><div></div><div></div><div></div>
+					<div></div><div></div><div></div><div></div>
+				</div>
+				<div id="status-notice" class="godot" style="display: none;"></div>
+			</div>
+		</div>
+
+		<!-- AD BOTTOM -->
+		<div class="ad-row">
+			<ins class="adsbygoogle"
+				style="display:block"
+				data-ad-client="ca-pub-9629042402517422"
+				data-ad-slot="4140776745"
+				data-ad-format="auto"
+				data-full-width-responsive="true"></ins>
+			<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+		</div>
+	</section>
+
+	<!-- ═══ CATEGORIES ═══ -->
+	<section class="categories" id="categories">
+		<h3>Browse by category <span>— more coming soon</span></h3>
+		<div class="cat-grid">
+			<div class="cat-card">
+				<span class="soon">NEW</span>
+				<span class="icon">🎮</span>
+				<div class="name">Arcade</div>
+				<div class="count">2 games</div>
+			</div>
+			<div class="cat-card">
+				<span class="soon">SOON</span>
+				<span class="icon">🧩</span>
+				<div class="name">Puzzle</div>
+				<div class="count">0 games</div>
+			</div>
+			<div class="cat-card">
+				<span class="soon">SOON</span>
+				<span class="icon">⚔️</span>
+				<div class="name">Action</div>
+				<div class="count">0 games</div>
+			</div>
+			<div class="cat-card">
+				<span class="soon">SOON</span>
+				<span class="icon">🧠</span>
+				<div class="name">Strategy</div>
+				<div class="count">0 games</div>
+			</div>
+			<div class="cat-card">
+				<span class="soon">SOON</span>
+				<span class="icon">🏎️</span>
+				<div class="name">Racing</div>
+				<div class="count">0 games</div>
+			</div>
+			<div class="cat-card">
+				<span class="soon">SOON</span>
+				<span class="icon">🎯</span>
+				<div class="name">Shooting</div>
+				<div class="count">0 games</div>
+			</div>
+		</div>
+	</section>
 
 	<!-- ═══ FOOTER ═══ -->
 	<div class="footer">
@@ -299,30 +564,31 @@
 	<!-- ═══ GODOT ENGINE ═══ -->
 	<script src="index.js"></script>
 	<script>
-		const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":193168,"index.wasm":35708238},"focusCanvas":true,"gdextensionLibs":[]};
-		const engine = new Engine(GODOT_CONFIG);
-
 		(function () {
+			'use strict';
+
 			const INDETERMINATE_STATUS_STEP_MS = 100;
-			const statusProgress = document.getElementById('status-progress');
-			const statusProgressInner = document.getElementById('status-progress-inner');
-			const statusIndeterminate = document.getElementById('status-indeterminate');
-			const statusNotice = document.getElementById('status-notice');
+			var engine = null;
+			var gameStarted = false;
+			var initializing = true;
+			var statusMode = 'hidden';
 
-			let initializing = true;
-			let statusMode = 'hidden';
+			var statusProgress = document.getElementById('status-progress');
+			var statusProgressInner = document.getElementById('status-progress-inner');
+			var statusIndeterminate = document.getElementById('status-indeterminate');
+			var statusNotice = document.getElementById('status-notice');
 
-			let animationCallbacks = [];
+			var animationCallbacks = [];
 			function animate(time) {
-				animationCallbacks.forEach((callback) => callback(time));
+				animationCallbacks.forEach(function (callback) { callback(time); });
 				requestAnimationFrame(animate);
 			}
 			requestAnimationFrame(animate);
 
 			function animateStatusIndeterminate(ms) {
-				const i = Math.floor((ms / INDETERMINATE_STATUS_STEP_MS) % 8);
+				var i = Math.floor((ms / INDETERMINATE_STATUS_STEP_MS) % 8);
 				if (statusIndeterminate.children[i].style.borderTopColor === '') {
-					Array.prototype.slice.call(statusIndeterminate.children).forEach((child) => {
+					Array.prototype.slice.call(statusIndeterminate.children).forEach(function (child) {
 						child.style.borderTopColor = '';
 					});
 					statusIndeterminate.children[i].style.borderTopColor = '#dfdfdf';
@@ -331,27 +597,21 @@
 
 			function setStatusMode(mode) {
 				if (statusMode === mode || !initializing) return;
-				[statusProgress, statusIndeterminate, statusNotice].forEach((elem) => {
+				[statusProgress, statusIndeterminate, statusNotice].forEach(function (elem) {
 					elem.style.display = 'none';
 				});
 				animationCallbacks = animationCallbacks.filter(function (value) {
 					return (value !== animateStatusIndeterminate);
 				});
 				switch (mode) {
-					case 'progress':
-						statusProgress.style.display = 'block';
-						break;
+					case 'progress': statusProgress.style.display = 'block'; break;
 					case 'indeterminate':
 						statusIndeterminate.style.display = 'block';
 						animationCallbacks.push(animateStatusIndeterminate);
 						break;
-					case 'notice':
-						statusNotice.style.display = 'block';
-						break;
-					case 'hidden':
-						break;
-					default:
-						throw new Error('Invalid status mode');
+					case 'notice': statusNotice.style.display = 'block'; break;
+					case 'hidden': break;
+					default: throw new Error('Invalid status mode');
 				}
 				statusMode = mode;
 			}
@@ -360,45 +620,83 @@
 				while (statusNotice.lastChild) {
 					statusNotice.removeChild(statusNotice.lastChild);
 				}
-				const lines = text.split('\n');
-				lines.forEach((line) => {
+				var lines = text.split('\n');
+				lines.forEach(function (line) {
 					statusNotice.appendChild(document.createTextNode(line));
 					statusNotice.appendChild(document.createElement('br'));
 				});
 			}
 
 			function displayFailureNotice(err) {
-				const msg = err.message || err;
+				var msg = err.message || err;
 				console.error(msg);
 				setStatusNotice(msg);
 				setStatusMode('notice');
 				initializing = false;
 			}
 
-			const missing = Engine.getMissingFeatures();
-			if (missing.length !== 0) {
-				const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
-				displayFailureNotice(missingMsg + missing.join('\n'));
-			} else {
+			function startGame() {
+				if (gameStarted) return;
+				gameStarted = true;
+
+				var missing = Engine.getMissingFeatures();
+				if (missing.length !== 0) {
+					var missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
+					displayFailureNotice(missingMsg + missing.join('\n'));
+					return;
+				}
+
+				engine = new Engine({
+					"args":[],"canvasResizePolicy":2,"executable":"index","experimentalVK":false,
+					"fileSizes":{"index.pck":193168,"index.wasm":35708238},
+					"focusCanvas":true,"gdextensionLibs":[]
+				});
+
 				setStatusMode('indeterminate');
 				engine.startGame({
 					'onProgress': function (current, total) {
 						if (total > 0) {
-							statusProgressInner.style.width = `${(current / total) * 100}%`;
+							statusProgressInner.style.width = (current / total * 100) + '%';
 							setStatusMode('progress');
 							if (current === total) {
-								setTimeout(() => { setStatusMode('indeterminate'); }, 500);
+								setTimeout(function () { setStatusMode('indeterminate'); }, 500);
 							}
 						} else {
 							setStatusMode('indeterminate');
 						}
-					},
-				}).then(() => {
+					}
+				}).then(function () {
 					setStatusMode('hidden');
 					initializing = false;
 				}, displayFailureNotice);
 			}
-		}());
+
+			// ── HERO / GAME TRANSITION ──
+			var hero = document.getElementById('hero');
+			var gameArea = document.getElementById('gameArea');
+			var playBtn = document.getElementById('playBtn');
+			var backBtn = document.getElementById('backBtn');
+			var catSection = document.getElementById('categories');
+
+			playBtn.addEventListener('click', function () {
+				hero.style.display = 'none';
+				catSection.style.display = 'none';
+				gameArea.classList.add('visible');
+				// Scroll to top of game
+				gameArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				// Start Godot engine
+				setTimeout(startGame, 300);
+			});
+
+			backBtn.addEventListener('click', function () {
+				gameArea.classList.remove('visible');
+				hero.style.display = '';
+				catSection.style.display = '';
+				hero.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			});
+
+		})();
 	</script>
+
 </body>
 </html>
