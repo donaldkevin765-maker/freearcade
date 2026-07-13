@@ -189,6 +189,7 @@
     }
 
     if (state === 'gameover') {
+      try { window.FreeArcadeSave.setHighScore('SnakeEvolved', E.getScore()); } catch (e) {}
       if (input.action) {
         E.setLevel(1);
         init.call({ engine: E });
@@ -199,6 +200,10 @@
     }
 
     if (state === 'levelComplete') {
+      try {
+        window.FreeArcadeSave.setHighScore('SnakeEvolved', E.getScore());
+        window.FreeArcadeSave.incrementStat('totalFruitsEaten', ateCount);
+      } catch (e) {}
       if (input.action) {
         E.setLevel(level + 1);
         init.call({ engine: E });
@@ -448,9 +453,14 @@
     if (state === 'gameover') {
       ctx.fillStyle = 'rgba(0,0,0,0.7)';
       ctx.fillRect(0, 0, E.W, E.H);
-      E.textCenterShadow('GAME OVER', cx, cy - 45, 16, '#ff4444', '#000');
-      E.textCenterShadow('SCORE: ' + E.getScore(), cx, cy - 5, 10, '#ffaa00', '#000');
-      E.textCenterShadow('SIZE: ' + snake.length, cx, cy + 15, 8, '#88aacc', '#000');
+      E.textCenterShadow('GAME OVER', cx, cy - 55, 16, '#ff4444', '#000');
+      E.textCenterShadow('SCORE: ' + E.getScore(), cx, cy - 15, 10, '#ffaa00', '#000');
+      E.textCenterShadow('SIZE: ' + snake.length, cx, cy + 5, 8, '#88aacc', '#000');
+      try {
+        var best = window.FreeArcadeSave.getHighScore('SnakeEvolved');
+        if (E.getScore() >= best && best > 0) E.textCenter('★ NEW BEST ★', cx, cy + 20, 8, '#ffdd00');
+        else E.textCenter('BEST: ' + best, cx, cy + 20, 7, '#ffdd00');
+      } catch (e) {}
       E.textCenter('PRESS ENTER TO RETRY', cx, cy + 55, 8, '#aaa');
     }
 
@@ -460,7 +470,11 @@
       E.textCenterShadow('LEVEL ' + level + ' CLEAR!', cx, cy - 40, 14, '#00ff88', '#000');
       E.textCenterShadow('SCORE: ' + E.getScore(), cx, cy, 10, '#ffaa00', '#000');
       E.textCenterShadow('SIZE: ' + snake.length, cx, cy + 18, 8, '#88aacc', '#000');
-      E.textCenter('PRESS ENTER FOR LEVEL ' + (level + 1), cx, cy + 55, 8, '#aaa');
+      try {
+        var best = window.FreeArcadeSave.getHighScore('SnakeEvolved');
+        if (E.getScore() >= best && best > 0) E.textCenter('★ NEW BEST ★', cx, cy + 34, 8, '#ffdd00');
+      } catch (e) {}
+      E.textCenter('PRESS ENTER FOR LEVEL ' + (level + 1), cx, cy + 58, 8, '#aaa');
     }
   }
 

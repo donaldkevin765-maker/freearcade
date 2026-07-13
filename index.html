@@ -118,6 +118,53 @@
 		}
 		.nav-links a:hover { color: var(--text); }
 		.nav-links a.active { color: var(--gold); }
+		.nav-coins {
+			font-family: 'Press Start 2P', monospace;
+			font-size: 10px;
+			color: var(--gold);
+			padding: 4px 12px;
+			border: 1px solid rgba(240,192,64,0.2);
+			border-radius: 4px;
+			background: rgba(240,192,64,0.08);
+		}
+
+		/* ── STATS BAR ── */
+		.stats-bar {
+			width: 100%;
+			max-width: 1200px;
+			padding: 0 24px;
+			display: flex;
+			justify-content: center;
+		}
+		.stats-inner {
+			width: 100%;
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+			gap: 12px;
+			padding: 16px 20px;
+			background: var(--bg-card);
+			border: 1px solid rgba(255,255,255,0.04);
+			border-radius: var(--radius);
+		}
+		.stat-item {
+			text-align: center;
+		}
+		.stat-item .stat-label {
+			font-size: 9px;
+			font-family: 'Press Start 2P', monospace;
+			color: var(--text-dim);
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			margin-bottom: 4px;
+		}
+		.stat-item .stat-value {
+			font-size: 16px;
+			font-weight: 700;
+			color: var(--text);
+		}
+		.stat-item .stat-value.gold { color: var(--gold); }
+		.stat-item .stat-value.green { color: #44ff88; }
+		.stat-item .stat-value.red { color: #ff4444; }
 
 		/* ── CRT SCAN OVERLAY ── */
 		.crt-overlay {
@@ -572,7 +619,7 @@
 			<div class="nav-logo">FREE<span>ARCADE</span></div>
 			<div class="nav-links">
 				<a href="#" class="active">All Games</a>
-				<a href="#">Categories</a>
+				<span class="nav-coins" id="coinDisplay">🪙 0</span>
 			</div>
 		</div>
 	</nav>
@@ -605,6 +652,36 @@
 					<img src="index.png" alt="FreeArcade Game">
 				</div>
 				<div class="crt-label">CRT DISPLAY</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- ═══ STATS BAR ═══ -->
+	<section class="stats-bar" id="statsBar">
+		<div class="stats-inner">
+			<div class="stat-item">
+				<div class="stat-label">🪙 Coins</div>
+				<div class="stat-value gold" id="statCoins">0</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-label">🏆 Space Blaster</div>
+				<div class="stat-value" id="statSpaceBlaster">0</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-label">🧱 Block Breaker</div>
+				<div class="stat-value" id="statBlockBreaker">0</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-label">🌀 Maze Runner</div>
+				<div class="stat-value green" id="statMazeRunner">--</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-label">🐍 Snake Evolved</div>
+				<div class="stat-value" id="statSnakeEvolved">0</div>
+			</div>
+			<div class="stat-item">
+				<div class="stat-label">⏱ Play Time</div>
+				<div class="stat-value" id="statPlayTime">0h</div>
 			</div>
 		</div>
 	</section>
@@ -678,10 +755,10 @@
 				<div class="play-overlay"><span>▶ PLAY</span></div>
 				<div class="game-info">
 					<div class="game-name">Block Breaker</div>
-					<div class="game-desc">Classic breakout with power-ups, multiple brick types, and 5 unique level layouts.</div>
+					<div class="game-desc">Classic breakout with power-ups, multiple brick types, unique procedural levels every playthrough.</div>
 					<div class="game-meta">
 						<span>PUZZLE</span>
-						<span class="levels">5 LEVELS</span>
+						<span class="levels">∞ LEVELS</span>
 						<span>KEYBOARD</span>
 					</div>
 				</div>
@@ -731,7 +808,8 @@
 		<span>4 games · free · no download</span>
 	</div>
 
-	<!-- ═══ GAME ENGINE + GAME MODULES ═══ -->
+	<!-- ═══ SAVE SYSTEM + GAME ENGINE + GAME MODULES ═══ -->
+	<script src="games/save.js"></script>
 	<script src="games/engine.js"></script>
 	<script src="games/space-blaster.js"></script>
 	<script src="games/block-breaker.js"></script>
@@ -857,6 +935,34 @@
 				hideGameArea();
 			}
 		});
+
+		/* ── Stats update ── */
+		function updateStats() {
+			try {
+				var save = window.FreeArcadeSave;
+				if (!save) return;
+				document.getElementById('statCoins').textContent = save.getCoins();
+				document.getElementById('statSpaceBlaster').textContent = save.getHighScore('SpaceBlaster');
+				document.getElementById('statBlockBreaker').textContent = save.getHighScore('BlockBreaker');
+				var mt = save.getBestMazeTime();
+				document.getElementById('statMazeRunner').textContent = mt >= 999998 ? '--' : Math.floor(mt) + 's';
+				document.getElementById('statSnakeEvolved').textContent = save.getHighScore('SnakeEvolved');
+				var hours = Math.floor(save.getTotalPlayTime() / 3600);
+				document.getElementById('statPlayTime').textContent = hours + 'h';
+				document.getElementById('coinDisplay').textContent = '🪙 ' + save.getCoins();
+			} catch (e) {}
+		}
+
+		// Initial update + refresh when returning from game
+		updateStats();
+		var statsInterval = setInterval(updateStats, 2000);
+
+		// Also update on game area close
+		var _origHide = hideGameArea;
+		hideGameArea = function () {
+			_origHide();
+			setTimeout(updateStats, 200);
+		};
 	})();
 	</script>
 

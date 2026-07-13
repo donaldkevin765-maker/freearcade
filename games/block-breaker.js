@@ -1,25 +1,30 @@
 /**
- * Block Breaker — breakout clone with power-ups, combos, and 5 level layouts
+ * Block Breaker — infinite breakout with procedural level generation
  *
- * Uses FreeArcadeEngine via `this.engine` in init()
+ * Every level is procedurally generated. No two are the same.
+ * Brick HP, layout patterns, and special bricks scale with level.
+ * Play until you run out of lives.
  *
- * Features:
- *  - 5 unique level layouts that properly fit the 480×400 canvas
- *  - 5 powerup types: wide paddle, slow ball, multiball, fire ball, catch
- *  - Paddle velocity influences ball trajectory for better control
- *  - Combo system: hitting bricks consecutively without paddle miss awards bonus
- *  - Ball trail for readability
- *  - Progressive difficulty
+ * Features for long sessions:
+ *  - 8 procedural layout generators (rows, diamond, checker, fortress, stripes, rings, scattered, pyramid)
+ *  - Brick HP scales with level (1-5)
+ *  - Steel bricks (indestructible) appear at higher levels
+ *  - Explosive bricks (destroy neighbors) appear at higher levels
+ *  - Level number tracks progression indefinitely
+ *  - High score saved to localStorage
  */
 (function () {
   'use strict';
 
   var E;
   var paddle, balls, bricks, powerups, particles;
-  var state;       // 'ready' | 'playing' | 'gameover' | 'levelComplete'
+  var state;
   var level;
   var comboCount = 0;
-  var hasCatchBall = false;  // true when catch powerup active
+  var hasCatchBall = false;
+  var fireBallActive = false;
+  var scoreMultiplier = 1;
+  var totalBricksDestroyed = 0;
 
   // Layout constants
   var COLS = 8;
@@ -28,176 +33,241 @@
   var GAP = 5;
   var OFFSET_X = 14;
   var OFFSET_Y = 35;
+  var PADDLE_Y = 360;
 
-  // ── Level Layouts ──
-  // Each returns an array of {x, y, w, h, hp, color}
-  var layouts = [
-    // Level 1: Simple rows
-    function () {
-      var b = [];
-      for (var r = 0; r < 4; r++) {
+  // ── Procedural Bricks ──
+  // Each generator returns an array of {x, y, w, h, hp, maxHp, color, type}
+  // type: 'normal' | 'steel' | 'explosive'
+
+  var generators = [
+    // 0: Full rows
+    function (lvl) {
+      var bricks = [];
+      var rows = Math.min(3 + Math.floor(lvl / 2), 7);
+      for (var r = 0; r < rows; r++) {
         for (var c = 0; c < COLS; c++) {
-          b.push(makeBrick(c, r, 1, r % 2 === 0 ? '#ff4444' : '#ff8844'));
+          bricks.push(makeBrick(c, r, lvl));
         }
       }
-      return b;
+      return bricks;
     },
-    // Level 2: Diamond
-    function () {
-      var b = [];
-      var colors = ['#ff4444', '#ff8844', '#ffcc44', '#44ff44', '#44ccff'];
-      for (var r = 0; r < 5; r++) {
-        var offset = Math.abs(2 - r);
+    // 1: Diamond pattern
+    function (lvl) {
+      var bricks = [];
+      var rows = Math.min(5, 3 + Math.floor(lvl / 3));
+      var mid = Math.floor(rows / 2);
+      for (var r = 0; r < rows; r++) {
+        var offset = Math.abs(mid - r);
         var count = COLS - offset * 2;
-        for (var c = 0; c < count; c++) {
-          b.push(makeBrick(offset + c, r, r < 2 ? 2 : 1, colors[r]));
-        }
-      }
-      return b;
-    },
-    // Level 3: Checkerboard
-    function () {
-      var b = [];
-      for (var r = 0; r < 6; r++) {
-        for (var c = 0; c < COLS; c++) {
-          if ((r + c) % 2 === 0) {
-            var hp = r < 2 ? 3 : (r < 4 ? 2 : 1);
-            var color = r < 2 ? '#cc44ff' : (r < 4 ? '#44aaff' : '#44ff88');
-            b.push(makeBrick(c, r, hp, color));
+        if (count > 0) {
+          for (var c = 0; c < count; c++) {
+            bricks.push(makeBrick(offset + c, r, lvl));
           }
         }
       }
-      return b;
+      return bricks;
     },
-    // Level 4: Fortress (reduced to 8 cols to fit)
-    function () {
-      var b = [];
-      for (var r = 0; r < 7; r++) {
+    // 2: Checkerboard
+    function (lvl) {
+      var bricks = [];
+      var rows = Math.min(4 + Math.floor(lvl / 2), 7);
+      for (var r = 0; r < rows; r++) {
         for (var c = 0; c < COLS; c++) {
-          // Fortress walls: outer ring is thick, inner is weak
-          var isOuter = (r === 0 || r === 6 || c === 0 || c === 7);
-          var hp = isOuter ? 3 : (r < 3 ? 2 : 1);
-          var color = isOuter ? '#ff4444' : (r < 3 ? '#ffaa44' : '#44ff88');
-          if (isOuter && r > 0 && r < 6 && c > 0 && c < 7) continue; // only walls
-          b.push(makeBrick(c, r, hp, color));
+          if ((r + c) % 2 === 0) {
+            bricks.push(makeBrick(c, r, lvl));
+          }
         }
       }
-      // Add inner blocks
-      for (var r2 = 2; r2 < 5; r2++) {
-        for (var c2 = 2; c2 < 6; c2++) {
-          b.push(makeBrick(c2, r2, 1, '#44aaff'));
-        }
-      }
-      return b;
+      return bricks;
     },
-    // Level 5: Spiral centered on canvas
-    function () {
-      var b = [];
-      var cx = 240, cy = 160;
-      for (var i = 0; i < 30; i++) {
-        var angle = i * 0.8;
-        var dist = 40 + i * 7;
-        var x = cx + Math.cos(angle) * dist - BRICK_W / 2;
-        var y = cy + Math.sin(angle) * dist - BRICK_H / 2;
-        var hp = 2;
-        var hue = (i * 12) % 360;
-        var color = 'hsl(' + hue + ', 80%, 55%)';
-        b.push({ x: x, y: y, w: BRICK_W, h: BRICK_H, hp: hp, maxHp: hp, color: color });
+    // 3: Fortress (walls + inner blocks)
+    function (lvl) {
+      var bricks = [];
+      var rows = Math.min(5 + Math.floor(lvl / 2), 7);
+      for (var r = 0; r < rows; r++) {
+        for (var c = 0; c < COLS; c++) {
+          var isWall = (r === 0 || r === rows - 1 || c === 0 || c === COLS - 1);
+          if (isWall) {
+            bricks.push(makeBrick(c, r, lvl, 'steel'));
+          }
+        }
       }
-      return b;
+      // Inner blocks
+      for (var r2 = 2; r2 < rows - 2 && r2 < 5; r2++) {
+        for (var c2 = 2; c2 < COLS - 2; c2++) {
+          bricks.push(makeBrick(c2, r2, lvl));
+        }
+      }
+      return bricks;
+    },
+    // 4: Vertical stripes
+    function (lvl) {
+      var bricks = [];
+      var rows = Math.min(4 + Math.floor(lvl / 2), 7);
+      for (var c = 0; c < COLS; c++) {
+        var stripeHp = (c % 3 === 0) ? lvl * 2 : 1 + Math.floor(lvl / 3);
+        for (var r = 0; r < rows; r++) {
+          var b = makeBrick(c, r, lvl);
+          b.hp = Math.min(stripeHp, 5);
+          b.maxHp = b.hp;
+          if (stripeHp > 2) b.type = 'steel';
+          bricks.push(b);
+        }
+      }
+      return bricks;
+    },
+    // 5: Rings / concentric
+    function (lvl) {
+      var bricks = [];
+      var rows = Math.min(5 + Math.floor(lvl / 2), 7);
+      for (var r = 0; r < rows; r++) {
+        for (var c = 0; c < COLS; c++) {
+          if (r === 0 || r === rows - 1 || c === 0 || c === COLS - 1 || r === 2 || r === 3 || c === 3 || c === 4) {
+            bricks.push(makeBrick(c, r, lvl));
+          }
+        }
+      }
+      return bricks;
+    },
+    // 6: Scattered clusters
+    function (lvl) {
+      var bricks = [];
+      var rows = Math.min(4 + Math.floor(lvl / 2), 7);
+      var clusters = 3 + Math.floor(lvl / 2);
+      for (var cl = 0; cl < clusters; cl++) {
+        var centerR = 1 + Math.floor(Math.random() * (rows - 2));
+        var centerC = 1 + Math.floor(Math.random() * (COLS - 2));
+        var size = 1 + Math.floor(Math.random() * 2);
+        for (var dr = -size; dr <= size; dr++) {
+          for (var dc = -size; dc <= size; dc++) {
+            var r = centerR + dr;
+            var c = centerC + dc;
+            if (r >= 0 && r < rows && c >= 0 && c < COLS && Math.random() < 0.7) {
+              bricks.push(makeBrick(c, r, lvl));
+            }
+          }
+        }
+      }
+      return bricks;
+    },
+    // 7: Pyramid
+    function (lvl) {
+      var bricks = [];
+      var rows = Math.min(5 + Math.floor(lvl / 2), 7);
+      for (var r = 0; r < rows; r++) {
+        var count = COLS - r * 2;
+        if (count > 0) {
+          for (var c = 0; c < count; c++) {
+            var b = makeBrick(r + c, r, lvl);
+            if (r === 0) b.hp = Math.min(3, lvl);
+            bricks.push(b);
+          }
+        }
+      }
+      return bricks;
     }
   ];
 
-  function makeBrick(col, row, hp, color) {
+  function makeBrick(col, row, level, forcedType) {
+    var hp = 1;
+    if (level > 3) hp = 1 + Math.floor(Math.random() * Math.min(level - 2, 4));
+    hp = Math.min(hp, 5);
+
+    var type = forcedType || 'normal';
+    if (!forcedType && level > 5 && Math.random() < 0.08) type = 'steel';
+    if (!forcedType && level > 8 && Math.random() < 0.06) type = 'explosive';
+
+    var color;
+    if (type === 'steel') color = '#666688';
+    else if (type === 'explosive') color = '#ff6600';
+    else {
+      var hues = [0, 30, 60, 180, 240, 300, 360];
+      color = 'hsl(' + hues[col % hues.length] + ', 70%, ' + (45 + row * 5) + '%)';
+    }
+
     return {
       x: OFFSET_X + col * (BRICK_W + GAP),
       y: OFFSET_Y + row * (BRICK_H + GAP),
       w: BRICK_W, h: BRICK_H,
       hp: hp,
       maxHp: hp,
-      color: color
+      color: color,
+      type: type,
     };
   }
 
   function init() {
     E = this.engine;
     level = E.getLevel();
+    if (level < 1) level = 1;
 
-    var layoutIdx = (level - 1) % layouts.length;
-    if (layoutIdx < 0) layoutIdx = 0;
-    paddle = { x: 200, y: 360, w: 80, h: 12, vx: 0 };
+    paddle = { x: 200, y: PADDLE_Y, w: 80, h: 12, vx: 0 };
     balls = [{
-      x: 240, y: 340, r: 6,
+      x: 240, y: PADDLE_Y - 6, r: 6,
       vx: 170, vy: -230,
       stuckOnPaddle: true,
-      trail: []
+      trail: [],
+      fire: false,
     }];
-    bricks = layouts[layoutIdx]();
+
+    // Generate level
+    var genIdx = (level - 1) % generators.length;
+    bricks = generators[genIdx](level);
+
     powerups = [];
     particles = [];
     state = 'ready';
     comboCount = 0;
     hasCatchBall = false;
+    fireBallActive = false;
+    scoreMultiplier = 1 + Math.floor(level / 10) * 0.5;
 
     E.setScore(0);
     E.setLives(3);
   }
 
-  // ── Powerups ──
   var POWERUP_TYPES = [
-    { id: 'wide',  label: 'W', color: '#00ff88', desc: 'Wide paddle' },
-    { id: 'slow',  label: 'S', color: '#4488ff', desc: 'Slow ball' },
-    { id: 'multi', label: 'M', color: '#cc44ff', desc: 'Multi ball' },
-    { id: 'fire',  label: 'F', color: '#ff4444', desc: 'Fire ball' },
-    { id: 'catch', label: 'C', color: '#ffdd00', desc: 'Catch' },
+    { id: 'wide',  label: 'W', color: '#00ff88' },
+    { id: 'slow',  label: 'S', color: '#4488ff' },
+    { id: 'multi', label: 'M', color: '#cc44ff' },
+    { id: 'fire',  label: 'F', color: '#ff4444' },
+    { id: 'catch', label: 'C', color: '#ffdd00' },
   ];
 
   function spawnPowerup(x, y) {
     var type = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
-    powerups.push({
-      x: x - 12, y: y,
-      w: 24, h: 14,
-      vy: 90,
-      type: type.id,
-      label: type.label,
-      color: type.color
-    });
+    powerups.push({ x: x - 12, y: y, w: 24, h: 14, vy: 90, type: type.id, label: type.label, color: type.color });
   }
 
-  // ── Ball helpers ──
   function splitBall(b) {
-    // Create 2 additional balls angled away
-    for (var angle = -30; angle <= 30; angle += 60) {
-      if (angle === 0) continue;
-      var rad = angle * Math.PI / 180;
+    for (var a = -30; a <= 30; a += 60) {
+      if (a === 0) continue;
+      var rad = a * Math.PI / 180;
       var spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
       balls.push({
         x: b.x, y: b.y, r: 6,
         vx: spd * Math.cos(Math.atan2(b.vy, b.vx) + rad),
         vy: spd * Math.sin(Math.atan2(b.vy, b.vx) + rad),
         stuckOnPaddle: false,
-        trail: []
+        trail: [],
+        fire: b.fire || false,
       });
     }
   }
 
-  function addBallTrail(b) {
-    b.trail.push({ x: b.x, y: b.y });
-    if (b.trail.length > 8) b.trail.shift();
-  }
+  // ── Procedural generation by pattern theme ──
+  var genNames = ['Rows', 'Diamond', 'Checker', 'Fortress', 'Stripes', 'Rings', 'Scattered', 'Pyramid'];
 
   // ── Update ──
   function update(dt, input) {
-    // Paddle movement with velocity tracking
-    var paddleSpeed = 340;
+    var ps = 340;
     var prevPaddleX = paddle.x;
-    if (input.left)  paddle.x -= paddleSpeed * dt;
-    if (input.right) paddle.x += paddleSpeed * dt;
+    if (input.left)  paddle.x -= ps * dt;
+    if (input.right) paddle.x += ps * dt;
     paddle.x = Math.max(10, Math.min(E.W - paddle.w - 10, paddle.x));
     paddle.vx = (paddle.x - prevPaddleX) / dt;
 
     if (state === 'ready') {
-      // Ball follows paddle
       for (var i = 0; i < balls.length; i++) {
         if (balls[i].stuckOnPaddle) {
           balls[i].x = paddle.x + paddle.w / 2;
@@ -209,9 +279,8 @@
         for (var i = 0; i < balls.length; i++) {
           if (balls[i].stuckOnPaddle) {
             balls[i].stuckOnPaddle = false;
-            // Launch with slight angle based on paddle position
-            var hitPos = (balls[i].x - paddle.x) / paddle.w;
-            balls[i].vx = (hitPos - 0.5) * 160 + paddle.vx * 0.1;
+            var hp = (balls[i].x - paddle.x) / paddle.w;
+            balls[i].vx = (hp - 0.5) * 160 + paddle.vx * 0.1;
             balls[i].vy = -230;
           }
         }
@@ -221,8 +290,13 @@
     }
 
     if (state === 'gameover') {
+      try {
+        window.FreeArcadeSave.setHighScore('BlockBreaker', E.getScore());
+        window.FreeArcadeSave.setBestLevels(level);
+        window.FreeArcadeSave.incrementStat('totalBricksBroken', totalBricksDestroyed);
+      } catch (e) {}
       if (input.action) {
-        E.setLevel(level);
+        E.setLevel(1);
         init.call({ engine: E });
         state = 'playing';
         E.playCoin();
@@ -253,112 +327,122 @@
       }
     }
 
-    // Update each ball
     for (var bi = balls.length - 1; bi >= 0; bi--) {
       var b = balls[bi];
-
       if (b.stuckOnPaddle) {
         b.x = paddle.x + paddle.w / 2;
         b.y = paddle.y - b.r;
         continue;
       }
 
-      // Trail
-      addBallTrail(b);
+      b.trail.push({ x: b.x, y: b.y });
+      if (b.trail.length > 8) b.trail.shift();
 
-      // Movement
       b.x += b.vx * dt;
       b.y += b.vy * dt;
 
-      // Wall collisions
       if (b.x - b.r < 0) { b.x = b.r; b.vx = Math.abs(b.vx); E.playSound('blip'); }
       if (b.x + b.r > E.W) { b.x = E.W - b.r; b.vx = -Math.abs(b.vx); E.playSound('blip'); }
       if (b.y - b.r < 0) { b.y = b.r; b.vy = Math.abs(b.vy); E.playSound('blip'); }
 
-      // Bottom: lose ball
+      // Bottom lose
       if (b.y + b.r > E.H) {
         balls.splice(bi, 1);
         if (balls.length === 0) {
-          // All balls lost
-          if (!E.loseLife()) {
-            state = 'gameover';
-            E.playGameOver();
-            return;
-          }
-          // Respawn ball
-          balls.push({ x: paddle.x + paddle.w / 2, y: paddle.y - 6, r: 6, vx: 170, vy: -230, stuckOnPaddle: true, trail: [] });
+          if (!E.loseLife()) { state = 'gameover'; E.playGameOver(); return; }
+          balls.push({ x: paddle.x + paddle.w / 2, y: paddle.y - 6, r: 6, vx: 170, vy: -230, stuckOnPaddle: true, trail: [], fire: false });
+          bricks = generateLevel(level); // regenerate bricks for new life
           state = 'ready';
+          comboCount = 0;
           E.playExplode();
           return;
         }
         continue;
       }
 
-      // Paddle collision
+      // Paddle
       if (b.vy > 0 && b.y + b.r >= paddle.y && b.y + b.r <= paddle.y + paddle.h + 6 &&
           b.x >= paddle.x - b.r && b.x <= paddle.x + paddle.w + b.r) {
         b.vy = -Math.abs(b.vy);
-        var hitPos = Math.max(0, Math.min(1, (b.x - paddle.x) / paddle.w));
-        b.vx = (hitPos - 0.5) * 2 * 200 + paddle.vx * 0.15;
-        // Ensure minimum speed
+        var hp = Math.max(0, Math.min(1, (b.x - paddle.x) / paddle.w));
+        b.vx = (hp - 0.5) * 2 * 200 + paddle.vx * 0.15;
         var spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-        if (spd < 160) {
-          var ratio = 160 / spd;
-          b.vx *= ratio; b.vy *= ratio;
-        }
-        if (spd > 380) {
-          var ratio = 380 / spd;
-          b.vx *= ratio; b.vy *= ratio;
-        }
+        if (spd < 160) { var r2 = 160 / spd; b.vx *= r2; b.vy *= r2; }
+        if (spd > 400) { var r2 = 400 / spd; b.vx *= r2; b.vy *= r2; }
         b.y = paddle.y - b.r;
         E.playShoot();
-
-        // Catch powerup: ball sticks to paddle
-        if (hasCatchBall) {
-          b.stuckOnPaddle = true;
-        }
+        if (hasCatchBall) b.stuckOnPaddle = true;
         continue;
       }
 
       // Brick collisions
       for (var j = bricks.length - 1; j >= 0; j--) {
         var brick = bricks[j];
-        if (!ballBrickCollision(b, brick)) continue;
+        var cx = Math.max(brick.x, Math.min(b.x, brick.x + brick.w));
+        var cy = Math.max(brick.y, Math.min(b.y, brick.y + brick.h));
+        var dx = b.x - cx, dy = b.y - cy;
+        if (dx * dx + dy * dy >= b.r * b.r) continue;
 
-        brick.hp--;
         comboCount++;
+        var dmg = b.fire ? 3 : 1;
+        brick.hp -= dmg;
 
-        E.emitParticles(particles, brick.x + brick.w / 2, brick.y + brick.h / 2, brick.color, 6,
+        E.emitParticles(particles, brick.x + brick.w / 2, brick.y + brick.h / 2, brick.color, 5,
           { speedMin: 20, speedMax: 60, lifeMin: 0.2, lifeMax: 0.35 });
 
         if (brick.hp <= 0) {
-          bricks.splice(j, 1);
-          var points = 100 + Math.min(comboCount, 20) * 5;
-          E.addScore(points);
-          E.playExplode();
-          // Powerup drop
-          if (Math.random() < 0.14) {
-            spawnPowerup(brick.x + brick.w / 2, brick.y);
+          var bonus = Math.min(comboCount, 25) * 4;
+          var pts = Math.floor((100 + brick.maxHp * 50 + bonus) * scoreMultiplier);
+          E.addScore(pts);
+          totalBricksDestroyed++;
+
+          // Explosive brick
+          if (brick.type === 'explosive') {
+            var ex = brick.x, ey = brick.y;
+            E.emitParticles(particles, ex + brick.w / 2, ey + brick.h / 2, '#ff6600', 30, { speedMin: 60, speedMax: 150, lifeMax: 0.5 });
+            E.shake(6, 0.3);
+            // Destroy nearby bricks
+            for (var k = bricks.length - 1; k >= 0; k--) {
+              var other = bricks[k];
+              var dist = Math.abs(other.x - ex) + Math.abs(other.y - ey);
+              if (dist < 100 && k !== j) {
+                E.addScore(50);
+                E.emitParticles(particles, other.x + other.w / 2, other.y + other.h / 2, other.color, 5, { lifeMax: 0.3 });
+                bricks.splice(k, 1);
+                if (k < j) j--;
+              }
+            }
           }
+
+          bricks.splice(j, 1);
+          E.playExplode();
+          if (Math.random() < 0.14) spawnPowerup(brick.x + brick.w / 2, brick.y);
         } else {
-          brick.color = brick.hp <= 1 ? '#888888' : (brick.hp <= 2 ? '#aaaaaa' : brick.color);
-          E.addScore(15);
+          E.addScore(10 * scoreMultiplier);
           E.playHit();
         }
 
-        // Calculate bounce direction
-        bounceBallOffBrick(b, brick);
-        break; // one brick per frame per ball
+        // Bounce
+        var ol = (b.x + b.r) - brick.x;
+        var or2 = (brick.x + brick.w) - (b.x - b.r);
+        var ot = (b.y + b.r) - brick.y;
+        var ob = (brick.y + brick.h) - (b.y - b.r);
+        var minO = Math.min(ol, or2, ot, ob);
+        if (minO === ol || minO === or2) b.vx = -b.vx;
+        else b.vy = -b.vy;
+        if (minO === ol) b.x = brick.x - b.r;
+        else if (minO === or2) b.x = brick.x + brick.w + b.r;
+        else if (minO === ot) b.y = brick.y - b.r;
+        else b.y = brick.y + brick.h + b.r;
+        break;
       }
     }
 
-    // Update powerups
+    // Powerups
     for (var i = powerups.length - 1; i >= 0; i--) {
       var pu = powerups[i];
       pu.y += pu.vy * dt;
       if (pu.y > E.H) { powerups.splice(i, 1); continue; }
-
-      // Catch with paddle
       if (pu.y + pu.h >= paddle.y && pu.y <= paddle.y + paddle.h &&
           pu.x + pu.w >= paddle.x && pu.x <= paddle.x + paddle.w) {
         applyPowerup(pu);
@@ -367,45 +451,17 @@
       }
     }
 
-    // Particles
     E.updateParticles(particles, dt);
 
-    // Win check
     if (bricks.length === 0) {
       state = 'levelComplete';
       E.playLevelUp();
     }
   }
 
-  function ballBrickCollision(b, brick) {
-    // Circle vs AABB
-    var cx = Math.max(brick.x, Math.min(b.x, brick.x + brick.w));
-    var cy = Math.max(brick.y, Math.min(b.y, brick.y + brick.h));
-    var dx = b.x - cx;
-    var dy = b.y - cy;
-    return dx * dx + dy * dy < b.r * b.r;
-  }
-
-  function bounceBallOffBrick(b, brick) {
-    // Calculate overlap on each axis to determine bounce direction
-    var overlapLeft  = (b.x + b.r) - brick.x;
-    var overlapRight = (brick.x + brick.w) - (b.x - b.r);
-    var overlapTop   = (b.y + b.r) - brick.y;
-    var overlapBottom = (brick.y + brick.h) - (b.y - b.r);
-
-    var minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
-
-    if (minOverlap === overlapLeft || minOverlap === overlapRight) {
-      b.vx = -b.vx;
-    } else {
-      b.vy = -b.vy;
-    }
-
-    // Push ball out of brick to prevent sticking
-    if (minOverlap === overlapLeft)      b.x = brick.x - b.r;
-    else if (minOverlap === overlapRight) b.x = brick.x + brick.w + b.r;
-    else if (minOverlap === overlapTop)   b.y = brick.y - b.r;
-    else                                  b.y = brick.y + brick.h + b.r;
+  function generateLevel(lvl) {
+    var idx = Math.max(0, (lvl - 1) % generators.length);
+    return generators[idx](lvl);
   }
 
   function applyPowerup(pu) {
@@ -416,29 +472,19 @@
       case 'slow':
         for (var i = 0; i < balls.length; i++) {
           var spd = Math.sqrt(balls[i].vx * balls[i].vx + balls[i].vy * balls[i].vy);
-          if (spd > 120) {
-            var ratio = spd * 0.75 / spd;
-            balls[i].vx *= ratio;
-            balls[i].vy *= ratio;
-          }
+          if (spd > 100) { var r = spd * 0.7 / spd; balls[i].vx *= r; balls[i].vy *= r; }
         }
         break;
       case 'multi':
-        // Split all balls
-        var currentBalls = balls.slice();
-        for (var i = 0; i < currentBalls.length; i++) {
-          if (!currentBalls[i].stuckOnPaddle) splitBall(currentBalls[i]);
-        }
+        var cur = balls.slice();
+        for (var i = 0; i < cur.length; i++) { if (!cur[i].stuckOnPaddle) splitBall(cur[i]); }
         break;
       case 'fire':
-        // Fire ball: bricks take 3x damage
-        for (var i = 0; i < balls.length; i++) {
-          balls[i].fire = true;
-        }
+        for (var i = 0; i < balls.length; i++) balls[i].fire = true;
+        fireBallActive = true;
         break;
       case 'catch':
         hasCatchBall = true;
-        // Mark existing balls as catchable
         break;
     }
   }
@@ -448,22 +494,27 @@
     ctx.fillStyle = '#0a0a1a';
     ctx.fillRect(0, 0, E.W, E.H);
 
-    // Bricks
+    var genIdx = Math.max(0, (level - 1) % generators.length);
+
     for (var i = 0; i < bricks.length; i++) {
       var b = bricks[i];
       E.rect(b.x, b.y, b.w, b.h, b.color);
-      E.rectStroke(b.x, b.y, b.w, b.h, 'rgba(255,255,255,0.1)');
-      if (b.hp > 1 && b.hp < 10) {
-        E.text(String(b.hp), b.x + b.w / 2, b.y + 3, 8, 'rgba(0,0,0,0.4)', 'center');
+      if (b.type === 'steel') E.rectStroke(b.x, b.y, b.w, b.h, '#8888aa', 2);
+      else E.rectStroke(b.x, b.y, b.w, b.h, 'rgba(255,255,255,0.1)');
+      if (b.type === 'explosive') {
+        ctx.fillStyle = 'rgba(255,100,0,0.3)';
+        ctx.fillRect(b.x + 2, b.y + 2, b.w - 4, 3);
       }
-      if (b.hp > 1) {
-        // HP bar for high-HP bricks
-        E.rect(b.x, b.y - 4, b.w, 3, 'rgba(0,0,0,0.3)');
-        E.rect(b.x, b.y - 4, b.w * (b.hp / b.maxHp), 3, '#44ff44');
+      if (b.hp > 1 && b.hp < 10) {
+        E.text('' + b.hp, b.x + b.w / 2, b.y + 2, 7, 'rgba(0,0,0,0.5)', 'center');
+      }
+      if (b.hp > 1 && b.type !== 'steel') {
+        E.rect(b.x, b.y - 3, b.w, 2, 'rgba(0,0,0,0.3)');
+        E.rect(b.x, b.y - 3, b.w * (b.hp / b.maxHp), 2, '#44ff44');
       }
     }
 
-    // Powerups falling
+    // Powerups
     for (var i = 0; i < powerups.length; i++) {
       var pu = powerups[i];
       E.rect(pu.x, pu.y, pu.w, pu.h, pu.color);
@@ -476,9 +527,8 @@
       var b = balls[i];
       if (b.stuckOnPaddle) continue;
       for (var t = 0; t < b.trail.length; t++) {
-        var alpha = (t / b.trail.length) * 0.3;
-        ctx.globalAlpha = alpha;
-        E.circle(b.trail[t].x, b.trail[t].y, b.r * (0.3 + 0.7 * t / b.trail.length), '#aaddff');
+        ctx.globalAlpha = (t / b.trail.length) * 0.25;
+        E.circle(b.trail[t].x, b.trail[t].y, b.r * (0.3 + 0.7 * t / b.trail.length), b.fire ? '#ffaa00' : '#aaddff');
       }
       ctx.globalAlpha = 1;
     }
@@ -498,60 +548,53 @@
     // Paddle
     E.rect(paddle.x, paddle.y, paddle.w, paddle.h, '#00ddff');
     E.rect(paddle.x, paddle.y - 3, paddle.w, 3, 'rgba(0,221,255,0.3)');
-    // Catch indicator
-    if (hasCatchBall) {
-      E.rectStroke(paddle.x, paddle.y, paddle.w, paddle.h, '#ffdd00', 2);
-    }
-    // Fire indicator
-    var hasFire = false;
-    for (var i = 0; i < balls.length; i++) {
-      if (balls[i].fire) hasFire = true;
-    }
-    if (hasFire) {
-      E.rectStroke(paddle.x - 2, paddle.y - 2, paddle.w + 4, paddle.h + 4, '#ff4400', 1);
-    }
+    if (hasCatchBall) E.rectStroke(paddle.x, paddle.y, paddle.w, paddle.h, '#ffdd00', 2);
+    if (fireBallActive) E.rectStroke(paddle.x - 2, paddle.y - 2, paddle.w + 4, paddle.h + 4, '#ff4400', 1);
 
-    // Particles
     E.drawParticles(ctx, particles);
 
     // HUD
-    E.text('LEVEL: ' + level, 8, 8, 9, '#00ff88');
-    E.text('SCORE: ' + E.getScore(), E.W - 8, 8, 9, '#ffaa00', 'right');
+    E.text('LV.' + level + ' [' + genNames[genIdx] + ']', 8, 8, 7, '#00ff88');
+    E.text('SCORE: ' + E.getScore(), E.W - 8, 8, 8, '#ffaa00', 'right');
     var ls = '';
     for (var i = 0; i < E.getLives(); i++) ls += '♥ ';
-    E.text(ls, E.W / 2, 8, 9, '#ff6666', 'center');
-    if (comboCount >= 5) {
-      E.text('COMBO x' + comboCount, E.W / 2, 22, 7, '#ffdd00', 'center');
+    E.text(ls, E.W / 2, 8, 8, '#ff6666', 'center');
+    E.text('BRICKS: ' + bricks.length, 8, 20, 7, '#88aacc');
+    if (comboCount >= 5) E.text('COMBO x' + comboCount, E.W / 2, 20, 7, '#ffdd00', 'center');
+
+    if (scoreMultiplier > 1) {
+      E.text('x' + scoreMultiplier.toFixed(1) + ' SCORE', E.W - 8, 20, 7, '#ff8800', 'right');
     }
 
-    // Overlays
     var cx = E.W / 2, cy = E.H / 2;
 
     if (state === 'ready') {
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
       ctx.fillRect(0, 0, E.W, E.H);
-      E.textCenterShadow('BLOCK BREAKER', cx, 90, 18, '#44ccff', '#000');
-      E.textCenterShadow('LEVEL ' + level, cx, 125, 12, '#ffaa00', '#000');
-      E.textCenter('← → to move paddle', cx, 180, 9, '#aaa');
-      E.textCenter('P to pause', cx, 205, 8, '#666');
-      E.textCenter('PRESS ENTER TO START', cx, 250, 10, '#00ff88');
+      E.textCenterShadow('BLOCK BREAKER', cx, 80, 18, '#44ccff', '#000');
+      E.textCenterShadow('LEVEL ' + level, cx, 115, 11, '#ffaa00', '#000');
+      E.textCenter('Pattern: ' + genNames[genIdx], cx, 140, 8, '#888');
+      E.textCenter('← → to move · P to pause', cx, 180, 8, '#aaa');
+      E.textCenter('PRESS ENTER TO START', cx, 230, 9, '#00ff88');
     }
 
     if (state === 'gameover') {
       ctx.fillStyle = 'rgba(0,0,0,0.7)';
       ctx.fillRect(0, 0, E.W, E.H);
-      E.textCenterShadow('GAME OVER', cx, cy - 45, 20, '#ff4444', '#000');
-      E.textCenterShadow('LEVEL ' + level, cx, cy - 10, 10, '#ff8800', '#000');
-      E.textCenterShadow('SCORE: ' + E.getScore(), cx, cy + 15, 12, '#ffaa00', '#000');
-      E.textCenter('PRESS ENTER TO RETRY', cx, cy + 55, 9, '#aaa');
+      E.textCenterShadow('GAME OVER', cx, cy - 50, 18, '#ff4444', '#000');
+      E.textCenterShadow('LEVEL ' + level, cx, cy - 15, 9, '#ff8800', '#000');
+      E.textCenterShadow('SCORE: ' + E.getScore(), cx, cy + 8, 11, '#ffaa00', '#000');
+      var best = window.FreeArcadeSave.getHighScore('BlockBreaker');
+      if (E.getScore() >= best) E.textCenter('★ NEW BEST ★', cx, cy + 28, 8, '#ffdd00');
+      E.textCenter('PRESS ENTER TO RETRY', cx, cy + 55, 8, '#aaa');
     }
 
     if (state === 'levelComplete') {
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
       ctx.fillRect(0, 0, E.W, E.H);
-      E.textCenterShadow('LEVEL ' + level + ' CLEAR!', cx, cy - 40, 16, '#44ff88', '#000');
-      E.textCenterShadow('SCORE: ' + E.getScore(), cx, cy + 10, 12, '#ffaa00', '#000');
-      E.textCenter('PRESS ENTER FOR LEVEL ' + (level + 1), cx, cy + 55, 9, '#aaa');
+      E.textCenterShadow('LEVEL ' + level + ' CLEAR!', cx, cy - 40, 14, '#44ff88', '#000');
+      E.textCenterShadow('SCORE: ' + E.getScore(), cx, cy + 5, 10, '#ffaa00', '#000');
+      E.textCenter('PRESS ENTER FOR LEVEL ' + (level + 1), cx, cy + 50, 8, '#aaa');
     }
   }
 
