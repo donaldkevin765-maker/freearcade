@@ -977,7 +977,6 @@
 	</div>
 
 	<!-- ═══ SAVE SYSTEM + GAME ENGINE + GAME MODULES ═══ -->
-	<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
 	<script src="games/save.js"></script>
 	<script src="games/engine.js"></script>
 	<script src="games/space-blaster.js"></script>
@@ -1151,7 +1150,10 @@
 			setTimeout(updateStats, 200);
 		};
 
-		/* ── MULTIPLAYER SYSTEM (PeerJS P2P — no server needed) ── */
+		/* ── MULTIPLAYER SYSTEM (WebSocket via Cloudflare Tunnel) ── */
+		window.MULTIPLAYER_SERVER = window.location.hostname === 'localhost'
+			? 'ws://localhost:10000'
+			: 'wss://oils-combines-interpreted-seafood.trycloudflare.com';
 		var mpClient = null;
 		var mpOverlay = document.getElementById('mpOverlay');
 		var mpCreateJoin = document.getElementById('mpCreateJoin');
@@ -1230,8 +1232,11 @@
 				mpError.textContent = '⚠ ' + (data.message || 'Error');
 			});
 			mpClient.on('game_started', startMultiplayerGame);
+			mpClient.on('disconnected', function () {
+				mpError.textContent = '⚠ Disconnected from server. Reconnecting...';
+			});
 
-			// PeerJS handles everything in createRoom
+			// WebSocket connect + create room happens automatically
 			mpClient.createRoom(currentMultiplayerGame || 'ArenaShooter', name);
 		});
 
@@ -1269,6 +1274,9 @@
 				mpError.textContent = '⚠ ' + (data.message || 'Error');
 			});
 			mpClient.on('game_started', startMultiplayerGame);
+			mpClient.on('disconnected', function () {
+				mpError.textContent = '⚠ Disconnected from server. Reconnecting...';
+			});
 
 			mpClient.joinRoom(code, name);
 		});

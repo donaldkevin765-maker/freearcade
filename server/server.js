@@ -52,7 +52,7 @@ function joinRoom(code, ws, name) {
   const player = { id: playerId, name: name || 'Player ' + (playerId + 1), ws, ready: false };
   room.players.set(playerId, player);
 
-  if (!room.hostId) room.hostId = playerId;
+  if (room.hostId === null) room.hostId = playerId;
 
   // Notify others
   broadcast(room, { type: 'player_joined', player: { id: playerId, name: player.name } }, playerId);
