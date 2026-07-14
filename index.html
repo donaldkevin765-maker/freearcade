@@ -977,6 +977,7 @@
 	</div>
 
 	<!-- ═══ SAVE SYSTEM + GAME ENGINE + GAME MODULES ═══ -->
+	<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
 	<script src="games/save.js"></script>
 	<script src="games/engine.js"></script>
 	<script src="games/space-blaster.js"></script>
@@ -1150,11 +1151,7 @@
 			setTimeout(updateStats, 200);
 		};
 
-		/* ── MULTIPLAYER SYSTEM ── */
-		window.MULTIPLAYER_SERVER = window.location.hostname === 'localhost'
-			? 'ws://localhost:10000'
-			: 'wss://freearcade-multiplayer.onrender.com';
-
+		/* ── MULTIPLAYER SYSTEM (PeerJS P2P — no server needed) ── */
 		var mpClient = null;
 		var mpOverlay = document.getElementById('mpOverlay');
 		var mpCreateJoin = document.getElementById('mpCreateJoin');
@@ -1216,12 +1213,7 @@
 
 		mpCreateBtn.addEventListener('click', function () {
 			if (!mpClient) mpClient = new MultiplayerClient();
-			mpClient.connect();
-
-			mpClient.on('connected', function () {
-				var name = mpName.value.trim() || 'Player';
-				mpClient.createRoom(currentMultiplayerGame || 'ArenaShooter', name);
-			});
+			var name = mpName.value.trim() || 'Player';
 
 			mpClient.on('room_created', function (data) {
 				mpCreateJoin.style.display = 'none';
@@ -1234,13 +1226,13 @@
 
 			mpClient.on('player_joined', function () { updatePlayerList(); });
 			mpClient.on('player_left', function () { updatePlayerList(); });
-			mpClient.on('disconnected', function () {
-				mpError.textContent = '⚠ Disconnected from server';
-			});
 			mpClient.on('error', function (data) {
 				mpError.textContent = '⚠ ' + (data.message || 'Error');
 			});
 			mpClient.on('game_started', startMultiplayerGame);
+
+			// PeerJS handles everything in createRoom
+			mpClient.createRoom(currentMultiplayerGame || 'ArenaShooter', name);
 		});
 
 		mpJoinBtn.addEventListener('click', function () {
@@ -1260,12 +1252,7 @@
 			if (code.length < 4) { mpError.textContent = 'Enter a valid room code'; return; }
 
 			if (!mpClient) mpClient = new MultiplayerClient();
-			mpClient.connect();
-
-			mpClient.on('connected', function () {
-				var name = mpName.value.trim() || 'Player';
-				mpClient.joinRoom(code, name);
-			});
+			var name = mpName.value.trim() || 'Player';
 
 			mpClient.on('room_joined', function (data) {
 				mpCreateJoin.style.display = 'none';
@@ -1278,13 +1265,12 @@
 
 			mpClient.on('player_joined', function () { updatePlayerList(); });
 			mpClient.on('player_left', function () { updatePlayerList(); });
-			mpClient.on('disconnected', function () {
-				mpError.textContent = '⚠ Disconnected from server';
-			});
 			mpClient.on('error', function (data) {
 				mpError.textContent = '⚠ ' + (data.message || 'Error');
 			});
 			mpClient.on('game_started', startMultiplayerGame);
+
+			mpClient.joinRoom(code, name);
 		});
 
 		function startMultiplayerGame() {
