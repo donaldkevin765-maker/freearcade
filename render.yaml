@@ -1,0 +1,15 @@
+# FreeArcade Multiplayer Server — Render Blueprint
+# Render detects this file automatically when you connect your repo.
+# It creates the WebSocket service with zero manual config.
+services:
+  - type: web
+    name: freearcade-multiplayer
+    env: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+    healthCheckPath: /
+    autoDeploy: true
