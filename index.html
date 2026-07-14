@@ -592,6 +592,88 @@
 			to { opacity: 1; transform: translateY(0); }
 		}
 
+		/* ── MULTIPLAYER OVERLAY ── */
+		.mp-overlay {
+			display: none;
+			position: fixed;
+			top: 0; left: 0; right: 0; bottom: 0;
+			background: rgba(0,0,0,0.85);
+			z-index: 1000;
+			justify-content: center;
+			align-items: center;
+			font-family: 'Press Start 2P', monospace;
+		}
+		.mp-overlay.visible { display: flex; }
+		.mp-panel {
+			background: #0a0a1a;
+			border: 1px solid rgba(255,255,255,0.1);
+			border-radius: 8px;
+			padding: 30px;
+			width: 90%;
+			max-width: 440px;
+			text-align: center;
+		}
+		.mp-panel h2 { color: var(--gold); font-size: 14px; margin-bottom: 20px; }
+		.mp-panel label { color: var(--text-dim); font-size: 9px; display: block; margin: 12px 0 4px; }
+		.mp-panel input {
+			width: 100%;
+			padding: 10px;
+			background: #111;
+			border: 1px solid rgba(255,255,255,0.15);
+			border-radius: 4px;
+			color: white;
+			font-family: 'Press Start 2P', monospace;
+			font-size: 11px;
+			box-sizing: border-box;
+			text-align: center;
+		}
+		.mp-panel input:focus { border-color: var(--gold); outline: none; }
+		.mp-btn {
+			display: inline-block;
+			padding: 10px 24px;
+			margin: 8px;
+			border: 1px solid var(--gold);
+			border-radius: 4px;
+			color: var(--gold);
+			font-family: 'Press Start 2P', monospace;
+			font-size: 10px;
+			background: transparent;
+			cursor: pointer;
+			transition: all 0.2s;
+		}
+		.mp-btn:hover { background: var(--gold); color: #000; }
+		.mp-btn.primary { background: var(--gold); color: #000; }
+		.mp-btn.secondary { border-color: #ff4444; color: #ff4444; }
+		.mp-btn.secondary:hover { background: #ff4444; color: #fff; }
+		.mp-btn:disabled { opacity: 0.4; cursor: default; }
+		.mp-code {
+			font-size: 28px;
+			letter-spacing: 8px;
+			color: var(--gold);
+			padding: 16px;
+			background: rgba(255,221,0,0.06);
+			border-radius: 4px;
+			margin: 12px 0;
+			font-family: 'Press Start 2P', monospace;
+		}
+		.mp-player-list { margin: 16px 0; text-align: left; }
+		.mp-player-item {
+			padding: 8px 12px;
+			border: 1px solid rgba(255,255,255,0.06);
+			border-radius: 4px;
+			margin: 4px 0;
+			font-size: 9px;
+			color: #aaa;
+		}
+		.mp-player-item .host-badge {
+			color: var(--gold);
+			margin-left: 8px;
+			font-size: 8px;
+		}
+		.mp-status { color: var(--text-dim); font-size: 8px; margin: 8px 0; }
+		.mp-error { color: #ff4444; font-size: 8px; margin: 8px 0; }
+		.mp-share { color: var(--text-dim); font-size: 8px; margin: 4px 0; word-break: break-all; }
+
 		/* ── RESPONSIVE ── */
 		@media (max-width: 680px) {
 			.game-grid {
@@ -828,6 +910,7 @@
 						<span>ACTION</span>
 						<span class="levels">∞ WAVES</span>
 						<span>KEYBOARD</span>
+						<span class="mp-tag" style="color:#ffdd00;border-color:#ffdd00;">👥 CO-OP</span>
 					</div>
 				</div>
 			</div>
@@ -904,6 +987,7 @@
 	<script src="games/rungun.js"></script>
 	<script src="games/twin-stick.js"></script>
 	<script src="games/fortress.js"></script>
+	<script src="games/multiplayer.js"></script>
 
 	<script>
 	(function () {
@@ -1060,8 +1144,228 @@
 			_origHide();
 			setTimeout(updateStats, 200);
 		};
+
+		/* ── MULTIPLAYER SYSTEM ── */
+		window.MULTIPLAYER_SERVER = window.location.hostname === 'localhost'
+			? 'ws://localhost:10000'
+			: 'wss://freearcade-multiplayer.onrender.com';
+
+		var mpClient = null;
+		var mpOverlay = document.getElementById('mpOverlay');
+		var mpCreateJoin = document.getElementById('mpCreateJoin');
+		var mpRoom = document.getElementById('mpRoom');
+		var mpPlaying = document.getElementById('mpPlaying');
+		var mpError = document.getElementById('mpError');
+		var mpStatus = document.getElementById('mpStatus');
+		var mpRoomCode = document.getElementById('mpRoomCode');
+		var mpPlayerList = document.getElementById('mpPlayerList');
+		var mpShareText = document.getElementById('mpShareText');
+		var mpName = document.getElementById('mpName');
+		var mpCode = document.getElementById('mpCode');
+		var mpCreateBtn = document.getElementById('mpCreateBtn');
+		var mpJoinBtn = document.getElementById('mpJoinBtn');
+		var mpJoinCode = document.getElementById('mpJoinCode');
+		var mpJoinSubmit = document.getElementById('mpJoinSubmit');
+		var mpJoinCancel = document.getElementById('mpJoinCancel');
+		var mpStartBtn = document.getElementById('mpStartBtn');
+		var mpLeaveBtn = document.getElementById('mpLeaveBtn');
+		var mpQuitBtn = document.getElementById('mpQuitBtn');
+
+		var currentMultiplayerGame = null;
+		var multiplayerActive = false;
+
+		function showMpOverlay(gameKey) {
+			currentMultiplayerGame = gameKey;
+			mpOverlay.classList.add('visible');
+			mpCreateJoin.style.display = 'block';
+			mpRoom.style.display = 'none';
+			mpPlaying.style.display = 'none';
+			mpError.textContent = '';
+			mpCode.value = '';
+		}
+
+		function hideMpOverlay() {
+			mpOverlay.classList.remove('visible');
+			if (mpClient) {
+				mpClient.disconnect();
+				mpClient = null;
+			}
+			currentMultiplayerGame = null;
+			multiplayerActive = false;
+		}
+
+		function updatePlayerList() {
+			if (!mpClient) return;
+			var html = '';
+			for (var i = 0; i < mpClient.players.length; i++) {
+				var p = mpClient.players[i];
+				html += '<div class="mp-player-item">🎮 ' + p.name
+					+ (p.id === mpClient.hostId ? '<span class="host-badge">★ HOST</span>' : '')
+					+ '</div>';
+			}
+			mpPlayerList.innerHTML = html || '<div class="mp-player-item" style="opacity:0.5;">Waiting for players...</div>';
+			mpStatus.textContent = mpClient.players.length + '/4 players';
+
+			mpStartBtn.style.display = mpClient.isHost ? 'inline-block' : 'none';
+		}
+
+		mpCreateBtn.addEventListener('click', function () {
+			if (!mpClient) mpClient = new MultiplayerClient();
+			mpClient.connect();
+
+			mpClient.on('connected', function () {
+				var name = mpName.value.trim() || 'Player';
+				mpClient.createRoom(currentMultiplayerGame || 'ArenaShooter', name);
+			});
+
+			mpClient.on('room_created', function (data) {
+				mpCreateJoin.style.display = 'none';
+				mpRoom.style.display = 'block';
+				mpRoomCode.textContent = data.code;
+				mpShareText.textContent = 'Share this code with a friend!';
+				updatePlayerList();
+				mpError.textContent = '';
+			});
+
+			mpClient.on('player_joined', function () { updatePlayerList(); });
+			mpClient.on('player_left', function () { updatePlayerList(); });
+			mpClient.on('disconnected', function () {
+				mpError.textContent = '⚠ Disconnected from server';
+			});
+			mpClient.on('error', function (data) {
+				mpError.textContent = '⚠ ' + (data.message || 'Error');
+			});
+			mpClient.on('game_started', startMultiplayerGame);
+		});
+
+		mpJoinBtn.addEventListener('click', function () {
+			mpJoinCode.style.display = 'block';
+			mpCreateBtn.style.display = 'none';
+			mpJoinBtn.style.display = 'none';
+		});
+
+		mpJoinCancel.addEventListener('click', function () {
+			mpJoinCode.style.display = 'none';
+			mpCreateBtn.style.display = 'inline-block';
+			mpJoinBtn.style.display = 'inline-block';
+		});
+
+		mpJoinSubmit.addEventListener('click', function () {
+			var code = mpCode.value.trim().toUpperCase();
+			if (code.length < 4) { mpError.textContent = 'Enter a valid room code'; return; }
+
+			if (!mpClient) mpClient = new MultiplayerClient();
+			mpClient.connect();
+
+			mpClient.on('connected', function () {
+				var name = mpName.value.trim() || 'Player';
+				mpClient.joinRoom(code, name);
+			});
+
+			mpClient.on('room_joined', function (data) {
+				mpCreateJoin.style.display = 'none';
+				mpRoom.style.display = 'block';
+				mpRoomCode.textContent = data.code;
+				mpShareText.textContent = 'You joined room ' + data.code;
+				updatePlayerList();
+				mpError.textContent = '';
+			});
+
+			mpClient.on('player_joined', function () { updatePlayerList(); });
+			mpClient.on('player_left', function () { updatePlayerList(); });
+			mpClient.on('disconnected', function () {
+				mpError.textContent = '⚠ Disconnected from server';
+			});
+			mpClient.on('error', function (data) {
+				mpError.textContent = '⚠ ' + (data.message || 'Error');
+			});
+			mpClient.on('game_started', startMultiplayerGame);
+		});
+
+		function startMultiplayerGame() {
+			multiplayerActive = true;
+			mpOverlay.classList.remove('visible');
+			mpPlaying.style.display = 'none';
+
+			if (currentMultiplayerGame && gameMap[currentMultiplayerGame]) {
+				showGameArea(currentMultiplayerGame);
+			}
+		}
+
+		mpStartBtn.addEventListener('click', function () {
+			if (mpClient && mpClient.isHost && mpClient.players.length >= 1) {
+				mpClient.startGame();
+			}
+		});
+
+		mpLeaveBtn.addEventListener('click', function () {
+			if (mpClient) {
+				mpClient.leaveRoom();
+				mpClient.disconnect();
+				mpClient = null;
+			}
+			hideMpOverlay();
+		});
+
+		mpQuitBtn.addEventListener('click', function () {
+			if (mpClient) {
+				mpClient.leaveRoom();
+				mpClient.disconnect();
+				mpClient = null;
+			}
+			multiplayerActive = false;
+			hideGameArea();
+			hideMpOverlay();
+		});
+
+		// Close overlay on Escape
+		document.addEventListener('keydown', function (e) {
+			if (e.key === 'Escape' && mpOverlay.classList.contains('visible') && !mpRoom.style.display === 'block') {
+				hideMpOverlay();
+			}
+		});
+
+		// Expose multiplayer state to game modules
+		window.MultiplayerActive = function () { return multiplayerActive; };
+		window.MultiplayerClientInstance = function () { return mpClient; };
 	})();
 	</script>
+
+<!-- ═══ MULTIPLAYER OVERLAY ═══ -->
+<div class="mp-overlay" id="mpOverlay">
+	<div class="mp-panel">
+		<div id="mpLobby">
+			<h2>◈ MULTIPLAYER LOBBY ◈</h2>
+			<div id="mpCreateJoin">
+				<label>YOUR NAME</label>
+				<input type="text" id="mpName" value="Player" maxlength="12" placeholder="Enter name...">
+				<div style="display:flex;gap:10px;margin:10px 0;">
+					<button class="mp-btn primary" id="mpCreateBtn" style="flex:1;">CREATE ROOM</button>
+					<button class="mp-btn" id="mpJoinBtn" style="flex:1;">JOIN ROOM</button>
+				</div>
+				<div id="mpJoinCode" style="display:none;">
+					<label>ROOM CODE</label>
+					<input type="text" id="mpCode" maxlength="6" placeholder="ABC123" style="text-transform:uppercase;">
+					<button class="mp-btn" id="mpJoinSubmit" style="margin:8px;display:inline-block;">JOIN</button>
+					<button class="mp-btn secondary" id="mpJoinCancel" style="margin:8px;display:inline-block;">CANCEL</button>
+				</div>
+			</div>
+			<div id="mpRoom" style="display:none;">
+				<div class="mp-code" id="mpRoomCode">------</div>
+				<div class="mp-share" id="mpShareText">Share this code with a friend!</div>
+				<div class="mp-player-list" id="mpPlayerList"></div>
+				<div class="mp-status" id="mpStatus">Waiting for players...</div>
+				<button class="mp-btn primary" id="mpStartBtn">START GAME</button>
+				<button class="mp-btn secondary" id="mpLeaveBtn">LEAVE</button>
+			</div>
+			<div id="mpPlaying" style="display:none;">
+				<h2>◈ IN GAME ◈</h2>
+				<button class="mp-btn secondary" id="mpQuitBtn">QUIT & LEAVE</button>
+			</div>
+			<div class="mp-error" id="mpError"></div>
+		</div>
+	</div>
+</div>
 
 </body>
 </html>

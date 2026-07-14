@@ -11,7 +11,7 @@
   'use strict';
 
   var E;
-  var player, bullets, enemies, particles, cores, turrets;
+  var player, player2, bullets, enemies, particles, cores, turrets;
   var state, wave, waveSpawnCount, enemiesSpawned, enemiesKilled;
   var fireCooldown, enemySpawnTimer;
   var invincibleTimer = 0;
@@ -23,6 +23,7 @@
   var inShopActive = false;
   var shopSelection = 0;
   var totalKills = 0;
+  var mp, isMultiplayer, isHost, mpFrameCount;
 
   var WEAPONS = [
     { name: 'Pistol',    spread: 0,    count: 1,  cooldown: 0.25, dmg: 1,  speed: 400, color: '#ffff44' },
@@ -49,11 +50,14 @@
     { id: 'yellow', color: '#ffdd00', label: '★ CORE',effect: 'turret' },
   ];
 
+  var _lastInput = { keys: {} };
+
   function init() {
     E = this.engine;
     wave = E.getLevel();
 
-    player = { x: E.W/2, y: E.H/2, r: 10, speed: 180, maxHp: 5, hp: 5, invincible: 0 };
+    player = { x: E.W/3, y: E.H/2, r: 10, speed: 180, maxHp: 5, hp: 5, invincible: 0 };
+    player2 = { x: 2*E.W/3, y: E.H/2, r: 10, speed: 180, maxHp: 5, hp: 5, invincible: 0 };
     bullets = [];
     enemies = [];
     particles = [];
@@ -74,6 +78,16 @@
     turretCores = 0;
     inShopActive = false;
     totalKills = 0;
+
+    // Multiplayer setup
+    mp = (typeof window !== 'undefined' && window.MultiplayerClientInstance) ? window.MultiplayerClientInstance() : null;
+    isMultiplayer = (typeof window !== 'undefined' && window.MultiplayerActive) ? window.MultiplayerActive() : false;
+    isHost = mp ? mp.isHost : true;
+    mpFrameCount = 0;
+
+    if (isMultiplayer) {
+      waveSpawnCount = Math.min(8 + wave * 3, 55); // More enemies for co-op
+    }
 
     E.setScore(0);
     E.setLives(3);
@@ -258,6 +272,8 @@
     }
 
     // ── PLAYING ──
+    // Store input for render function
+    _lastInput = input;
 
     // Player movement (WASD / arrows)
     var spd = player.speed;
@@ -293,6 +309,128 @@
       }
       fireCooldown = Math.max(0.06, wpn.cooldown - wave * 0.003);
       E.playShoot();
+    }
+
+    // ── Player 2 (Local co-op or remote) ──
+    var p2Input = null;
+    if (isMultiplayer && mp) {
+      // Receive remote input from other player
+      var remoteInputs = mp.remoteInputs;
+      for (var pid in remoteInputs) {
+        if (remoteInputs.hasOwnProperty(pid) && parseInt(pid) !== mp.playerId) {
+          p2Input = remoteInputs[pid];
+          break;
+        }
+      }
+    }
+
+    // If remote input available, use it; otherwise use local P2 keys
+    if (p2Input) {
+      // Remote player — apply their input locally
+      var p2spd = player2.speed;
+      var p2mx = 0, p2my = 0;
+      if (p2Input.left)  p2mx -= 1;
+      if (p2Input.right) p2mx += 1;
+      if (p2Input.up)    p2my -= 1;
+      if (p2Input.down)  p2my += 1;
+      if (p2mx !== 0 || p2my !== 0) { var l = Math.sqrt(p2mx*p2mx + p2my*p2my); p2mx /= l; p2my /= l; }
+      player2.x += p2mx * p2spd * dt;
+      player2.y += p2my * p2spd * dt;
+      player2.x = Math.max(player2.r, Math.min(E.W - player2.r, player2.x));
+      player2.y = Math.max(player2.r, Math.min(E.H - player2.r, player2.y));
+
+      // Remote player shooting
+      if (p2Input.shoot && p2Input.fireTimer) {
+        var p2angle = Math.atan2(p2Input.aimY, p2Input.aimX);
+        var wpn = WEAPONS[weaponLevel];
+        for (var b = 0; b < wpn.count; b++) {
+          var aOff = (b - (wpn.count-1)/2) * wpn.spread;
+          spawnBullet(player2.x, player2.y, p2angle + aOff, wpn.speed + wave * 5, false, wpn.color);
+        }
+      }
+    } else if (isMultiplayer || true) {
+      // Local P2 controls (IJKL move, U/H aim, G shoot) — always available even in local mode
+      var p2mx = 0, p2my = 0;
+      if (input.keys['KeyI']) p2my -= 1; // Up
+      if (input.keys['KeyK']) p2my += 1; // Down
+      if (input.keys['KeyJ']) p2mx -= 1; // Left
+      if (input.keys['KeyL']) p2mx += 1; // Right
+      if (p2mx !== 0 || p2my !== 0) { var l = Math.sqrt(p2mx*p2mx + p2my*p2my); p2mx /= l; p2my /= l; }
+      player2.x += p2mx * player2.speed * dt;
+      player2.y += p2my * player2.speed * dt;
+      player2.x = Math.max(player2.r, Math.min(E.W - player2.r, player2.x));
+      player2.y = Math.max(player2.r, Math.min(E.H - player2.r, player2.y));
+
+      // P2 shoot (G key)
+      var p2aimX = 0, p2aimY = 0;
+      if (input.keys['KeyU']) p2aimY = -1;
+      if (input.keys['KeyH']) p2aimY = 1;
+      if (p2aimX === 0 && p2aimY === 0) p2aimX = 1; // default right
+      if (input.keys['KeyG']) {
+        var p2angle = Math.atan2(p2aimY, p2aimX);
+        var wpn = WEAPONS[weaponLevel];
+        for (var b = 0; b < wpn.count; b++) {
+          var aOff = (b - (wpn.count-1)/2) * wpn.spread;
+          spawnBullet(player2.x, player2.y, p2angle + aOff, wpn.speed + wave * 5, false, wpn.color);
+        }
+        input.keys['KeyG'] = false;
+      }
+    }
+
+    // ── Send own input to remote opponents ──
+    if (isMultiplayer && mp) {
+      mp.sendInput({
+        left: input.left || input.keys['KeyJ'] || false,
+        right: input.right || input.keys['KeyL'] || false,
+        up: input.up || input.keys['KeyI'] || false,
+        down: input.down || input.keys['KeyK'] || false,
+        shoot: input.keys['Space'] || input.keys['KeyZ'] || false,
+        aimX: aimX,
+        aimY: aimY,
+        fireTimer: fireCooldown,
+      });
+
+      // Host sends authoritative game state every 3 frames
+      mpFrameCount++;
+      if (isHost && mpFrameCount % 3 === 0) {
+        mp.sendGameState({
+          enemies: enemies.map(function(e) {
+            return { x: e.x, y: e.y, hp: e.hp, r: e.r, color: e.color, isBoss: !!e.isBoss };
+          }),
+          cores: cores.map(function(c) {
+            return { x: c.x, y: c.y, type: c.type, life: c.life };
+          }),
+          player2: { x: player2.x, y: player2.y },
+          wave: wave,
+          score: E.getScore(),
+        });
+      }
+
+      // Apply remote game state (for non-host: receive host's authoritative state)
+      if (!isHost) {
+        var remoteStates = mp.remoteStates;
+        for (var pid in remoteStates) {
+          if (remoteStates.hasOwnProperty(pid) && parseInt(pid) === mp.hostId) {
+            var st = remoteStates[pid];
+            if (st && st.enemies) {
+              // Sync enemies from host
+              for (var ei = 0; ei < st.enemies.length; ei++) {
+                var se = st.enemies[ei];
+                if (ei < enemies.length) {
+                  enemies[ei].x = se.x;
+                  enemies[ei].y = se.y;
+                  enemies[ei].hp = se.hp;
+                }
+              }
+              // Sync P2 position if it's us
+              if (st.player2) {
+                player2.x = st.player2.x;
+                player2.y = st.player2.y;
+              }
+            }
+          }
+        }
+      }
     }
 
     // Bullets
@@ -622,34 +760,56 @@
         player.hp > 2 ? '#44ff88' : (player.hp > 1 ? '#ffaa00' : '#ff4444'));
 
       // Aim direction indicator
-      if (input.keys['ArrowUp'] || input.keys['ArrowDown'] || input.keys['ArrowLeft'] || input.keys['ArrowRight']) {
+      if (_lastInput && _lastInput.keys && (_lastInput.keys['ArrowUp'] || _lastInput.keys['ArrowDown'] || _lastInput.keys['ArrowLeft'] || _lastInput.keys['ArrowRight'])) {
         ctx.strokeStyle = 'rgba(68,221,255,0.3)';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(player.x, player.y);
         var ax = 0, ay = 0;
-        if (input.keys['ArrowUp'] || input.keys['KeyW']) ay = -1;
-        if (input.keys['ArrowDown'] || input.keys['KeyS']) ay = 1;
-        if (input.keys['ArrowLeft'] || input.keys['KeyA']) ax = -1;
-        if (input.keys['ArrowRight'] || input.keys['KeyD']) ax = 1;
+        if (_lastInput.keys['ArrowUp'] || _lastInput.keys['KeyW']) ay = -1;
+        if (_lastInput.keys['ArrowDown'] || _lastInput.keys['KeyS']) ay = 1;
+        if (_lastInput.keys['ArrowLeft'] || _lastInput.keys['KeyA']) ax = -1;
+        if (_lastInput.keys['ArrowRight'] || _lastInput.keys['KeyD']) ax = 1;
         if (ax === 0 && ay === 0) ax = 1;
         ctx.lineTo(player.x + ax * 30, player.y + ay * 30);
         ctx.stroke();
       }
     }
 
+    // Player 2 (co-op)
+    if (player2.x > 0 && player2.y > 0) {
+      ctx.fillStyle = '#ff8844';
+      ctx.beginPath();
+      ctx.arc(player2.x, player2.y, player2.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffcc88';
+      ctx.beginPath();
+      ctx.arc(player2.x - 2, player2.y - 2, player2.r * 0.5, 0, Math.PI * 2);
+      ctx.fill();
+      // HP bar
+      E.rect(player2.x - player2.r, player2.y - player2.r - 8, player2.r * 2, 3, 'rgba(0,0,0,0.5)');
+      E.rect(player2.x - player2.r, player2.y - player2.r - 8, player2.r * 2 * (player2.hp/player2.maxHp), 3, '#ff8844');
+    }
+
     E.drawParticles(ctx, particles);
 
     // HUD
     E.text('WAVE ' + wave + '  SCORE: ' + E.getScore(), 8, 8, 8, '#ffaa00');
-    E.text('HP: ' + player.hp + '/' + player.maxHp, 8, 20, 7, '#44ff88');
+    E.text('P1 HP: ' + player.hp + '/' + player.maxHp, 8, 20, 7, '#44ff88');
+    if (isMultiplayer || player2.x > 0) {
+      E.text('P2 HP: ' + player2.hp + '/' + player2.maxHp, 8, 30, 7, '#ff8844');
+    }
     E.text(WEAPONS[weaponLevel].name, E.W - 8, 8, 7, WEAPONS[weaponLevel].color, 'right');
     E.text('⟡' + turretCores, E.W - 8, 20, 7, '#ffdd00', 'right');
     var ls = '';
     for (var i = 0; i < E.getLives(); i++) ls += '♥ ';
     E.text(ls, E.W/2, 8, 8, '#ff6666', 'center');
-    E.text('ENEMIES: ' + (waveSpawnCount - enemiesKilled), 8, 32, 7, '#88aacc');
+    E.text('ENEMIES: ' + (waveSpawnCount - enemiesKilled), 8, 42, 7, '#88aacc');
     if (scoreMultiplier > 1) E.text('x' + scoreMultiplier.toFixed(1), E.W - 8, 32, 7, '#ff4444', 'right');
+    if (isMultiplayer) {
+      E.text(isHost ? '👑 HOST' : '📡 JOINER', E.W/2, 20, 7, '#ffdd00', 'center');
+      if (mp) E.text('ROOM: ' + (mp.roomCode || '--'), E.W/2, 30, 6, '#888', 'center');
+    }
 
     var cx = E.W/2, cy = E.H/2;
 
@@ -661,7 +821,11 @@
       E.textCenter('WASD move · Arrows aim · SPACE shoot', cx, 150, 8, '#aaa');
       E.textCenter('Colored cores give temporary buffs!', cx, 175, 7, '#888');
       E.textCenter('Weapon cycles every few waves', cx, 195, 7, '#888');
-      E.textCenter('PRESS ENTER TO START', cx, 250, 9, '#00ff88');
+      if (isMultiplayer) {
+        E.textCenter('P1: WASD + Arrows + SPACE  |  P2: IJKL + U/H + G', cx, 220, 7, '#aaa');
+        E.textCenter('PLAYERS: ' + (mp ? mp.players.length : 2) + '  MODE: ' + (isHost ? 'HOST' : 'JOINER'), cx, 235, 7, '#ffdd00');
+      }
+      E.textCenter('PRESS ENTER TO START', cx, isMultiplayer ? 260 : 250, 9, '#00ff88');
     }
 
     if (state === 'gameover') {
