@@ -976,7 +976,8 @@
 		<span>8 games · free · no download</span>
 	</div>
 
-	<!-- ═══ SAVE SYSTEM + GAME ENGINE + GAME MODULES ═══ -->
+	<!-- ═══ SUPABASE REALTIME + GAME ENGINE + GAME MODULES ═══ -->
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 	<script src="games/save.js"></script>
 	<script src="games/engine.js"></script>
 	<script src="games/space-blaster.js"></script>
@@ -1150,10 +1151,7 @@
 			setTimeout(updateStats, 200);
 		};
 
-		/* ── MULTIPLAYER SYSTEM (WebSocket via Cloudflare Tunnel) ── */
-		window.MULTIPLAYER_SERVER = window.location.hostname === 'localhost'
-			? 'ws://localhost:10000'
-			: 'wss://commissioner-shark-passage-endangered.trycloudflare.com';
+		/* ── MULTIPLAYER SYSTEM (Supabase Realtime 24/7) ── */
 		var mpClient = null;
 		var mpOverlay = document.getElementById('mpOverlay');
 		var mpCreateJoin = document.getElementById('mpCreateJoin');
@@ -1344,7 +1342,7 @@
 				</div>
 				<div id="mpJoinCode" style="display:none;">
 					<label>ROOM CODE</label>
-					<input type="text" id="mpCode" maxlength="6" placeholder="ABC123" style="text-transform:uppercase;">
+					<input type="text" id="mpCode" maxlength="4" placeholder="ABCD" style="text-transform:uppercase;">
 					<button class="mp-btn" id="mpJoinSubmit" style="margin:8px;display:inline-block;">JOIN</button>
 					<button class="mp-btn secondary" id="mpJoinCancel" style="margin:8px;display:inline-block;">CANCEL</button>
 				</div>
