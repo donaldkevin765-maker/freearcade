@@ -1082,9 +1082,14 @@
 
 		// Game cards
 		document.querySelectorAll('.game-card').forEach(function (card) {
-			card.addEventListener('click', function () {
+			card.addEventListener('click', function (e) {
 				var gameKey = card.getAttribute('data-game');
 				if (gameKey && gameMap[gameKey]) {
+					// Check if click was on the co-op tag
+					if (e.target.classList.contains('mp-tag')) {
+						showMpOverlay(gameKey);
+						return;
+					}
 					showGameArea(gameKey);
 				}
 			});
